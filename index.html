@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pedidos">
+<title>Pedidos Taberna</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --bg4: #22222e;
+  --border: #2a2a38;
+  --border2: #363648;
+  --text: #f0f0f8;
+  --text2: #9090a8;
+  --text3: #5a5a72;
+  --tardio: #3B82F6;
+  --tardio-dim: rgba(59,130,246,0.15);
+  --carballo: #F97316;
+  --carballo-dim: rgba(249,115,22,0.15);
+  --inbraex: #22C55E;
+  --inbraex-dim: rgba(34,197,94,0.15);
+  --danger: #ef4444;
+  --radius: 12px;
+  --font-head: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+  --nav-h: 72px;
+  --top-h: 110px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-body); }
+
+/* TOP BAR */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: env(safe-area-inset-top, 12px) 16px 0;
+}
+.top-row1 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 10px;
+}
+.app-title {
+  font-family: var(--font-head); font-size: 26px; font-weight: 800;
+  letter-spacing: -0.5px; color: var(--text);
+}
+.app-title span { color: var(--active-color, var(--tardio)); }
+.week-badge {
+  font-family: var(--font-head); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.5px; color: var(--text3);
+  background: var(--bg3); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 20px;
+}
+.week-badge.monday { color: var(--danger); border-color: var(--danger); background: rgba(239,68,68,0.1); }
+.top-row2 {
+  display: flex; gap: 8px; align-items: center; padding-bottom: 10px;
+}
+#search {
+  flex: 1; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px;
+  font-family: var(--font-body); font-size: 15px; color: var(--text);
+  outline: none;
+}
+#search::placeholder { color: var(--text3); }
+#search:focus { border-color: var(--border2); }
+.btn-summary {
+  position: relative;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px;
+  font-family: var(--font-head); font-size: 15px; font-weight: 700;
+  color: var(--text2); cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.btn-summary.has-items { color: var(--active-color, var(--tardio)); border-color: var(--active-color, var(--tardio)); }
+.btn-summary .badge {
+  position: absolute; top: -6px; right: -6px;
+  background: var(--active-color, var(--tardio));
+  color: #fff; font-size: 10px; font-weight: 700;
+  border-radius: 10px; padding: 1px 5px; min-width: 18px; text-align: center;
+  font-family: var(--font-body);
+}
+
+/* SCROLL AREA */
+#scroll-area {
+  position: fixed;
+  top: var(--top-h); left: 0; right: 0;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 8px 0 16px;
+}
+
+/* CATEGORY HEADER */
+.cat-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 16px 6px;
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg);
+}
+.cat-label {
+  font-family: var(--font-head); font-size: 13px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text3);
+}
+.cat-line { flex: 1; height: 1px; background: var(--border); }
+.cat-count {
+  font-family: var(--font-head); font-size: 11px; font-weight: 600;
+  color: var(--text3); background: var(--bg3); border: 1px solid var(--border);
+  padding: 1px 6px; border-radius: 10px;
+}
+
+/* PRODUCT ROW */
+.prod-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.prod-row.has-qty { background: var(--active-dim, var(--tardio-dim)); }
+.prod-info { flex: 1; min-width: 0; }
+.prod-name {
+  font-size: 15px; font-weight: 500; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.prod-row.has-qty .prod-name { color: var(--active-color, var(--tardio)); font-weight: 600; }
+.prod-freq {
+  font-size: 11px; color: var(--text3); margin-top: 1px;
+  font-family: var(--font-head); letter-spacing: .5px;
+}
+.qty-controls {
+  display: flex; align-items: center; gap: 0;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; flex-shrink: 0;
+}
+.qty-btn {
+  width: 38px; height: 38px; border: none; background: transparent;
+  color: var(--text2); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .1s; font-family: var(--font-body);
+}
+.qty-btn:active { background: var(--border); }
+.qty-val {
+  width: 38px; text-align: center;
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  color: var(--text);
+  background: transparent; border: none; outline: none;
+  -moz-appearance: textfield;
+}
+.qty-val::-webkit-outer-spin-button,
+.qty-val::-webkit-inner-spin-button { -webkit-appearance: none; }
+.qty-val.active { color: var(--active-color, var(--tardio)); }
+.qty-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+
+/* BOTTOM NAV */
+#bottomnav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  display: flex; align-items: stretch;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px; cursor: pointer;
+  border: none; background: transparent; padding: 8px 4px;
+  transition: all .15s;
+}
+.nav-icon {
+  width: 28px; height: 4px; border-radius: 2px;
+  background: var(--text3); transition: all .2s;
+}
+.nav-btn.active .nav-icon { background: var(--nav-color); height: 5px; }
+.nav-btn.active[data-prov="TARDIO"] .nav-icon { background: var(--tardio); }
+.nav-btn.active[data-prov="CARBALLO"] .nav-icon { background: var(--carballo); }
+.nav-btn.active[data-prov="INBRAEX"] .nav-icon { background: var(--inbraex); }
+.nav-label {
+  font-family: var(--font-head); font-size: 13px; font-weight: 700;
+  letter-spacing: 1px; color: var(--text3); transition: all .2s;
+}
+.nav-btn.active[data-prov="TARDIO"] .nav-label { color: var(--tardio); }
+.nav-btn.active[data-prov="CARBALLO"] .nav-label { color: var(--carballo); }
+.nav-btn.active[data-prov="INBRAEX"] .nav-label { color: var(--inbraex); }
+.nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: transparent; transition: all .2s;
+}
+.nav-btn.has-order .nav-dot { background: var(--text3); }
+.nav-btn.active[data-prov="TARDIO"].has-order .nav-dot { background: var(--tardio); }
+.nav-btn.active[data-prov="CARBALLO"].has-order .nav-dot { background: var(--carballo); }
+.nav-btn.active[data-prov="INBRAEX"].has-order .nav-dot { background: var(--inbraex); }
+
+/* SUMMARY PANEL */
+#summary-panel {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7);
+  display: none; align-items: flex-end;
+}
+#summary-panel.open { display: flex; }
+.summary-sheet {
+  width: 100%; max-height: 85vh;
+  background: var(--bg2); border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  animation: slideup .25s ease-out;
+}
+@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.summary-handle {
+  width: 36px; height: 4px; border-radius: 2px;
+  background: var(--border2); margin: 12px auto 0;
+}
+.summary-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.summary-title {
+  font-family: var(--font-head); font-size: 22px; font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.summary-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 18px; color: var(--text2); border: none;
+}
+.summary-body { flex: 1; overflow-y: auto; padding: 12px 20px; }
+.summary-prov-block { margin-bottom: 20px; }
+.summary-prov-name {
+  font-family: var(--font-head); font-size: 14px; font-weight: 800;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 6px; display: inline-block;
+  margin-bottom: 8px;
+}
+.summary-prov-name.TARDIO { color: var(--tardio); background: var(--tardio-dim); }
+.summary-prov-name.CARBALLO { color: var(--carballo); background: var(--carballo-dim); }
+.summary-prov-name.INBRAEX { color: var(--inbraex); background: var(--inbraex-dim); }
+.summary-item {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.summary-item:last-child { border-bottom: none; }
+.summary-item-name { color: var(--text); flex: 1; padding-right: 12px; }
+.summary-item-qty {
+  font-family: var(--font-head); font-size: 18px; font-weight: 700;
+  min-width: 28px; text-align: right;
+}
+.summary-empty {
+  text-align: center; padding: 40px 20px;
+  font-family: var(--font-head); font-size: 18px; color: var(--text3);
+  letter-spacing: 1px;
+}
+.summary-footer {
+  display: flex; gap: 10px; padding: 12px 20px 4px;
+  border-top: 1px solid var(--border);
+}
+.btn-action {
+  flex: 1; padding: 14px; border-radius: 12px; border: none; cursor: pointer;
+  font-family: var(--font-head); font-size: 16px; font-weight: 700;
+  letter-spacing: .5px; transition: all .15s;
+}
+.btn-reset { background: var(--bg3); color: var(--danger); border: 1px solid var(--danger); }
+.btn-reset:active { background: rgba(239,68,68,0.15); }
+.btn-copy { background: var(--active-color, var(--tardio)); color: #fff; }
+.btn-copy:active { opacity: 0.85; }
+
+/* RESET BANNER */
+#reset-banner {
+  position: fixed; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px);
+  left: 16px; right: 16px; z-index: 150;
+  background: rgba(239,68,68,0.15); border: 1px solid var(--danger);
+  border-radius: 12px; padding: 12px 16px;
+  display: none; align-items: center; justify-content: space-between; gap: 12px;
+}
+#reset-banner.show { display: flex; }
+.reset-msg { font-size: 13px; color: var(--danger); font-weight: 500; }
+.btn-reset-now {
+  background: var(--danger); color: #fff; border: none; border-radius: 8px;
+  padding: 6px 14px; font-family: var(--font-head); font-size: 14px;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.btn-dismiss {
+  background: transparent; border: none; color: var(--text3);
+  font-size: 20px; cursor: pointer; padding: 0 4px;
+}
+
+/* COPIED TOAST */
+#toast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: var(--bg4); border: 1px solid var(--border2);
+  padding: 14px 28px; border-radius: 14px;
+  font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--text);
+  z-index: 300; pointer-events: none; opacity: 0; transition: opacity .2s;
+}
+#toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="top-row1">
+    <div class="app-title">TABERNA <span id="prov-label">TARDIO</span></div>
+    <div class="week-badge" id="week-badge">SEMANA 0</div>
+  </div>
+  <div class="top-row2">
+    <input type="search" id="search" placeholder="Buscar producto..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="btn-summary" id="btn-summary" onclick="openSummary()">
+      PEDIDO
+      <span class="badge" id="summary-badge" style="display:none">0</span>
+    </button>
+  </div>
+</div>
+
+<div id="scroll-area"></div>
+
+<div id="bottomnav">
+  <button class="nav-btn active" data-prov="TARDIO" onclick="switchProv('TARDIO')">
+    <div class="nav-icon"></div>
+    <div class="nav-label">TARDIO</div>
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-btn" data-prov="CARBALLO" onclick="switchProv('CARBALLO')">
+    <div class="nav-icon"></div>
+    <div class="nav-label">CARBALLO</div>
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-btn" data-prov="INBRAEX" onclick="switchProv('INBRAEX')">
+    <div class="nav-icon"></div>
+    <div class="nav-label">INBRAEX</div>
+    <div class="nav-dot"></div>
+  </button>
+</div>
+
+<div id="summary-panel" onclick="closeSummaryIfBg(event)">
+  <div class="summary-sheet">
+    <div class="summary-handle"></div>
+    <div class="summary-head">
+      <div class="summary-title">PEDIDO SEMANA <span id="sum-week">0</span></div>
+      <button class="summary-close" onclick="closeSummary()">✕</button>
+    </div>
+    <div class="summary-body" id="summary-body"></div>
+    <div class="summary-footer">
+      <button class="btn-action btn-reset" onclick="confirmReset()">RESETEAR</button>
+      <button class="btn-action btn-copy" id="btn-copy" onclick="copyOrder()">COPIAR PEDIDO</button>
+    </div>
+  </div>
+</div>
+
+<div id="reset-banner">
+  <div class="reset-msg">🗓 Hoy es lunes — ¿resetear pedidos de la semana anterior?</div>
+  <button class="btn-reset-now" onclick="doReset()">RESETEAR</button>
+  <button class="btn-dismiss" onclick="dismissBanner()">✕</button>
+</div>
+
+<div id="toast">¡Copiado!</div>
+
+<script>
+const DATA = {"TARDIO":{"color":"#3B82F6","accent":"#1D4ED8","cats":{"Cervezas":[{"name":"1925 (Mahou)","freq":94},{"name":"Mahou","freq":86},{"name":"Mahou 00 Tostada","freq":71},{"name":"Corona","freq":60},{"name":"Alhambra Red/Roja","freq":49},{"name":"Leffe Triple","freq":43},{"name":"Brutus","freq":35},{"name":"Stella Artois","freq":33},{"name":"Budweiser","freq":27},{"name":"Mahou Maestra","freq":23},{"name":"Centenial","freq":12},{"name":"All Day IPA","freq":10},{"name":"Porter","freq":6},{"name":"Mahou Reserva","freq":5},{"name":"Legendario","freq":2}],"Refrescos y Tónicas":[{"name":"7up","freq":91},{"name":"Tinto Verano Limón","freq":74},{"name":"Tónica Normal","freq":55},{"name":"Tónica Zero","freq":30},{"name":"Wild Berry (Schweppes)","freq":24},{"name":"Ginger Ale Normal","freq":24},{"name":"Soda Normal","freq":11},{"name":"Tónica Pomelo","freq":2},{"name":"Tónica Toque de Lima","freq":1}],"Agua con Gas / Casera":[{"name":"Casera Blanca","freq":73},{"name":"Casera Limón","freq":6}],"Trina":[{"name":"Trina Naranja","freq":20},{"name":"Trina Limón","freq":17}],"Premium Schweppes":[{"name":"Limón Premium","freq":75},{"name":"Naranja Premium","freq":34},{"name":"Tónica Premium","freq":28},{"name":"Ginger Beer","freq":42},{"name":"Pomelo Premium","freq":10},{"name":"Pomelo Normal","freq":6}],"Zumos":[{"name":"Zumo Naranja","freq":31},{"name":"Zumo Piña","freq":31},{"name":"Zumo Melocotón","freq":24},{"name":"Zumo Tomate","freq":13}],"Otros":[{"name":"Red Bull","freq":29},{"name":"Bitter Kas","freq":24},{"name":"Red Bull Zero","freq":5}]}},"CARBALLO":{"color":"#F97316","accent":"#C2410C","cats":{"Barriles":[{"name":"Barril Paulaner Rubia","freq":115},{"name":"Barril Trigo","freq":92},{"name":"Barril Murphys","freq":83},{"name":"Barril Guinness","freq":79},{"name":"Barril Lagunitas","freq":68},{"name":"Barril Hop House 13","freq":58},{"name":"Barril Affligem Doble","freq":25},{"name":"Barril Paulaner Trigo","freq":4},{"name":"Barril Birra Moretti","freq":3},{"name":"Barril Xcampo Gran Reserva","freq":2},{"name":"Barril Águila Sin Filtrar","freq":2},{"name":"Barril Affligem Triple","freq":1}],"Cerveza Botella / Tercio":[{"name":"1870","freq":96},{"name":"Heineken","freq":89},{"name":"Radler (Xcampo)","freq":86},{"name":"Águila Sin Filtrar","freq":79},{"name":"Alcazar","freq":71},{"name":"Xcampo Sin Gluten","freq":66},{"name":"Judas","freq":62},{"name":"Ladrón de Manzanas","freq":61},{"name":"Desperados","freq":59},{"name":"Amstel Oro 00 Tostada","freq":58},{"name":"Xcampo Pilsen","freq":55},{"name":"Muerte Súbita","freq":53},{"name":"Heineken 00","freq":51},{"name":"Birra Moretti (tercio)","freq":35},{"name":"Amstel","freq":35},{"name":"Xcampo","freq":33},{"name":"Águila Dorada","freq":31},{"name":"Xcampo Gran Reserva","freq":14},{"name":"Amstel Oro","freq":4},{"name":"Cruzcampo Pilsen","freq":1},{"name":"Cruzcampo Sin Gluten","freq":1},{"name":"Viejo Madrid","freq":1}],"Ginebra":[{"name":"Seagrams","freq":67},{"name":"Beefeater","freq":57},{"name":"Larios 0,70","freq":41},{"name":"Tanqueray","freq":35},{"name":"Nordés","freq":28},{"name":"Bombay Sapphire","freq":19},{"name":"Tanqueray 00","freq":19},{"name":"Larios 12","freq":17},{"name":"Seagrams 00","freq":10},{"name":"Puerto de Mora","freq":9},{"name":"Puerto de Indias","freq":8},{"name":"G'Vine","freq":8},{"name":"Sipsmith","freq":8},{"name":"Brockmans","freq":6},{"name":"Bombay Original","freq":6},{"name":"Beefeater 00/Light","freq":6},{"name":"Larios Rosé","freq":5},{"name":"Beefeater Black","freq":4},{"name":"Tanqueray Rangpur","freq":4},{"name":"Hendricks","freq":4},{"name":"Monkey 47","freq":4},{"name":"Gordons","freq":4},{"name":"Malfy Limone","freq":3},{"name":"Puerto Exótica","freq":3},{"name":"Gin Rives Normal","freq":2},{"name":"Malfy Naranja","freq":2},{"name":"Beefeater Pink","freq":1},{"name":"Martin Millers","freq":1},{"name":"Bulldog","freq":1},{"name":"Puerto Strawberry","freq":1}],"Whisky / Bourbon":[{"name":"Red Label (JW)","freq":61},{"name":"JB","freq":41},{"name":"Ballantines","freq":31},{"name":"Cutty Sark","freq":29},{"name":"Jameson","freq":24},{"name":"DYC 0,70","freq":23},{"name":"Black Label (JW)","freq":23},{"name":"Dewars","freq":18},{"name":"DYC 8 Años","freq":16},{"name":"Macallan 12","freq":8},{"name":"Cooper Dog","freq":8},{"name":"Laphroaig","freq":7},{"name":"Doble Black (JW)","freq":6},{"name":"Four Roses","freq":6},{"name":"Chivas 18","freq":5},{"name":"Ballantines 10 Años","freq":4},{"name":"Jameson Black Barrel","freq":4},{"name":"Makers Mark","freq":4},{"name":"Connemara","freq":3},{"name":"Chivas 12","freq":3},{"name":"Cardhu 12","freq":2},{"name":"Lagavulin","freq":2},{"name":"100 Pipers","freq":2},{"name":"Jim Beam","freq":2},{"name":"Toki (Suntory)","freq":2},{"name":"Ballantines Light","freq":1},{"name":"DYC 15 Años","freq":1},{"name":"Passport","freq":1},{"name":"Roe & Co","freq":1},{"name":"Hibiki","freq":1},{"name":"Hakushu","freq":1},{"name":"Yamazaki","freq":1}],"Ron":[{"name":"Legendario","freq":50},{"name":"Bacardí Litro","freq":27},{"name":"Brugal","freq":27},{"name":"Zacapa 23","freq":9},{"name":"Cacique","freq":14},{"name":"Pampero","freq":8},{"name":"Santa Teresa","freq":8},{"name":"Havana 7","freq":7},{"name":"Barceló","freq":7},{"name":"Pampero Aniversario","freq":11},{"name":"Brugal Doble Reserva","freq":6},{"name":"Brugal 1888","freq":6},{"name":"Bacardí Spiced","freq":5},{"name":"Flor de Caña 7","freq":5},{"name":"Bumbu XO","freq":5},{"name":"Zacapa XO","freq":4},{"name":"Bumbu Original","freq":4},{"name":"Capitán Morgan Black","freq":4},{"name":"Malibu","freq":4},{"name":"Cacique 500","freq":4},{"name":"Barceló Imperial","freq":2},{"name":"Arehucas","freq":2},{"name":"Don Papa","freq":2},{"name":"Havana 3","freq":1},{"name":"Havana Special","freq":1},{"name":"Santa Teresa 1796","freq":1},{"name":"Flor de Caña 12","freq":1},{"name":"Leblon","freq":1}],"Vodka":[{"name":"Absolut","freq":18},{"name":"Grey Goose","freq":6},{"name":"Ciroc Apple","freq":9},{"name":"Ciroc Berry","freq":4},{"name":"Ciroc Coco","freq":3},{"name":"Eristoff","freq":2},{"name":"Smirnoff","freq":1},{"name":"Eristoff Black","freq":1}],"Tequila":[{"name":"Patrón Silver","freq":6},{"name":"Cuervo Reposado","freq":3},{"name":"1800 Blanco/Repos/Añejo","freq":2},{"name":"Olmeca Reposado","freq":1}],"Licores y Otros":[{"name":"Baileys","freq":78},{"name":"Árabe (caja)","freq":54},{"name":"Salobreña (pack)","freq":48},{"name":"Crema Ruavieja","freq":28},{"name":"Aperol","freq":28},{"name":"Disaronno","freq":24},{"name":"Jagermeister","freq":24},{"name":"Licor Manzana Sin / Mora Sin","freq":23},{"name":"Martini Vibrante","freq":21},{"name":"Mono Dulce","freq":14},{"name":"Petroni Rojo","freq":13},{"name":"Martini Floreale","freq":13},{"name":"Hierbas Ruavieja","freq":11},{"name":"Granadina Rives","freq":9},{"name":"Marie Brizard","freq":8},{"name":"Martini Blanco","freq":7},{"name":"Martini Rojo","freq":7},{"name":"Sheridans","freq":6},{"name":"Anís Mono Dulce","freq":6},{"name":"Baileys Fresa/Strawberry","freq":5},{"name":"Tía María / Kalhua","freq":4},{"name":"Lima Rives","freq":3},{"name":"Vodka Caramelo","freq":3},{"name":"Campari","freq":2},{"name":"Frangelico","freq":2},{"name":"Baileys Chocolate","freq":2},{"name":"Petroni Spritz","freq":2},{"name":"Blue Tropic Rives","freq":2},{"name":"Baileys Almendra","freq":1},{"name":"Carlos I","freq":1},{"name":"Martini Rosso","freq":1}],"Productos Complementarios":[{"name":"Leche","freq":89},{"name":"Leche Sin Lactosa","freq":18},{"name":"ODK Melón","freq":9},{"name":"ODK Sandía","freq":3},{"name":"Puré Melocotón (Peachtree)","freq":2},{"name":"ODK Crema Chocolate","freq":1}]}},"INBRAEX":{"color":"#22C55E","accent":"#15803D","cats":{"Purés de Frutas (Monin)":[{"name":"Puré de Coco","freq":28},{"name":"Puré de Piña","freq":19},{"name":"Puré de Mango","freq":18},{"name":"Puré de Fresa","freq":15},{"name":"Puré de Frutas del Bosque","freq":15},{"name":"Puré de Fruta de la Pasión","freq":13},{"name":"Puré de Frambuesa / Raspberry","freq":9},{"name":"Puré de Banana / Plátano","freq":9},{"name":"Puré de Manzana","freq":9},{"name":"Puré de Ruibarbo","freq":6},{"name":"Puré de Frutos Rojos","freq":3},{"name":"Puré de Melocotón","freq":2}],"Siropes":[{"name":"Sirope de Ron","freq":22},{"name":"Sirope Mojito","freq":7},{"name":"Sirope Spicy Mango","freq":7},{"name":"Sirope Spicy","freq":5},{"name":"Sirope Orgeat","freq":5},{"name":"Sirope Jengibre","freq":3},{"name":"Sirope Pomelo","freq":2},{"name":"Sirope Basil","freq":1}],"Licores (Monin)":[{"name":"Licor de Coco","freq":16},{"name":"Licor de Melocotón","freq":14},{"name":"Licor de Banana","freq":8},{"name":"Licor Bellota Sin Alcohol","freq":7},{"name":"Licor Blue Curaçao","freq":6},{"name":"Licor Bellota Con Alcohol","freq":5},{"name":"Licor de Manzana Con Alcohol","freq":3},{"name":"Licor Italicus","freq":2}],"Curaçao / Bitter":[{"name":"Dry Curaçao","freq":14},{"name":"Dry Curaçao Yuzu","freq":2},{"name":"Crema de Cassis","freq":2}],"Rones y Destilados Especiales":[{"name":"Plantation Xaymaca","freq":3},{"name":"Matusalem 7 Años","freq":3},{"name":"Mezcal Encantado","freq":3},{"name":"Pisco Barsol","freq":3},{"name":"Matusalem 15 Años","freq":2},{"name":"Arehucas","freq":2}],"Tés Fríos y Cold Brew":[{"name":"Tea Frambuesa / Raspberry Tea","freq":7},{"name":"Tea Frutas del Bosque / Frutos Rojos","freq":4},{"name":"Tea Limón / Lemon Tea","freq":3},{"name":"Cold Brew Café / Frappe Café","freq":3},{"name":"Tea Melocotón / Peach Tea","freq":2}],"Otros":[{"name":"Red Bull","freq":5},{"name":"Salsa Chocolate Blanco","freq":3},{"name":"Triple Seco Pierre Ferrand","freq":1}]}}};
+
+const COLORS = { TARDIO: '#3B82F6', CARBALLO: '#F97316', INBRAEX: '#22C55E' };
+const DIMS   = { TARDIO: 'rgba(59,130,246,0.15)', CARBALLO: 'rgba(249,115,22,0.15)', INBRAEX: 'rgba(34,197,94,0.15)' };
+
+let currentProv = 'TARDIO';
+let quantities = {};  // key: "PROV||name" => qty
+
+function key(prov, name) { return prov + '||' + name; }
+function getQty(prov, name) { return quantities[key(prov,name)] || 0; }
+function setQty(prov, name, val) {
+  val = Math.max(0, parseInt(val)||0);
+  if(val===0) delete quantities[key(prov,name)];
+  else quantities[key(prov,name)] = val;
+  updateNav();
+  updateSummaryBadge();
+}
+
+function getWeekNumber() {
+  const d = new Date(); const onejan = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+}
+function isMonday() { return new Date().getDay() === 1; }
+
+function setActiveColor(prov) {
+  const c = COLORS[prov]; const dim = DIMS[prov];
+  document.documentElement.style.setProperty('--active-color', c);
+  document.documentElement.style.setProperty('--active-dim', dim);
+}
+
+function switchProv(prov) {
+  currentProv = prov;
+  setActiveColor(prov);
+  document.getElementById('prov-label').textContent = prov;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.prov===prov));
+  document.getElementById('search').value = '';
+  renderList();
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function renderList(filter) {
+  const q = (filter || document.getElementById('search').value || '').toLowerCase().trim();
+  const prov = DATA[currentProv];
+  const sa = document.getElementById('scroll-area');
+  let html = '';
+
+  Object.entries(prov.cats).forEach(([cat, items]) => {
+    const filtered = q ? items.filter(p => p.name.toLowerCase().includes(q)) : items;
+    if(!filtered.length) return;
+    const catQtyItems = filtered.filter(p => getQty(currentProv, p.name) > 0);
+    html += `<div class="cat-header">
+      <div class="cat-label">${cat}</div>
+      <div class="cat-line"></div>
+      ${catQtyItems.length ? `<div class="cat-count" style="color:${COLORS[currentProv]};border-color:${COLORS[currentProv]}">${catQtyItems.length}</div>` : ''}
+    </div>`;
+    filtered.forEach(p => {
+      const qty = getQty(currentProv, p.name);
+      const hasQty = qty > 0;
+      html += `<div class="prod-row ${hasQty?'has-qty':''}" id="row-${CSS.escape(currentProv+'||'+p.name)}">
+        <div class="prod-info">
+          <div class="prod-name">${p.name}</div>
+          <div class="prod-freq">${p.freq} pedidos históricos</div>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn" onclick="adj('${currentProv}','${p.name.replace(/'/g,"\\'")}', -1)">−</button>
+          <div class="qty-sep"></div>
+          <input class="qty-val ${hasQty?'active':''}" type="number" min="0" value="${qty||''}"
+            placeholder="0"
+            onchange="setQtyAndRefresh('${currentProv}','${p.name.replace(/'/g,"\\'")}',this.value)"
+            onfocus="this.select()">
+          <div class="qty-sep"></div>
+          <button class="qty-btn" onclick="adj('${currentProv}','${p.name.replace(/'/g,"\\'")}', 1)">+</button>
+        </div>
+      </div>`;
+    });
+  });
+
+  if(!html) html = `<div style="text-align:center;padding:60px 20px;color:var(--text3);font-family:var(--font-head);font-size:18px;letter-spacing:1px">SIN RESULTADOS</div>`;
+  sa.innerHTML = html;
+}
+
+function adj(prov, name, delta) {
+  const newVal = Math.max(0, getQty(prov, name) + delta);
+  setQty(prov, name, newVal);
+  renderList();
+}
+function setQtyAndRefresh(prov, name, val) {
+  setQty(prov, name, val);
+  renderList();
+}
+
+function updateNav() {
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    const p = b.dataset.prov;
+    const hasAny = Object.keys(quantities).some(k => k.startsWith(p+'||'));
+    b.classList.toggle('has-order', hasAny);
+  });
+}
+
+function updateSummaryBadge() {
+  const total = Object.keys(quantities).length;
+  const badge = document.getElementById('summary-badge');
+  const btn = document.getElementById('btn-summary');
+  badge.textContent = total;
+  badge.style.display = total > 0 ? 'block' : 'none';
+  btn.classList.toggle('has-items', total > 0);
+}
+
+function openSummary() {
+  const body = document.getElementById('summary-body');
+  let html = '';
+  let hasAny = false;
+  ['TARDIO','CARBALLO','INBRAEX'].forEach(prov => {
+    const items = Object.entries(quantities)
+      .filter(([k]) => k.startsWith(prov+'||'))
+      .map(([k,v]) => ({ name: k.split('||')[1], qty: v }));
+    if(!items.length) return;
+    hasAny = true;
+    html += `<div class="summary-prov-block">
+      <div class="summary-prov-name ${prov}">${prov}</div>`;
+    items.forEach(i => {
+      html += `<div class="summary-item">
+        <span class="summary-item-name">${i.name}</span>
+        <span class="summary-item-qty" style="color:${COLORS[prov]}">${i.qty}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  if(!hasAny) html = '<div class="summary-empty">NO HAY PRODUCTOS<br>EN EL PEDIDO</div>';
+  body.innerHTML = html;
+  document.getElementById('sum-week').textContent = getWeekNumber();
+  document.getElementById('summary-panel').classList.add('open');
+  document.getElementById('btn-copy').style.background = COLORS[currentProv];
+}
+function closeSummary() { document.getElementById('summary-panel').classList.remove('open'); }
+function closeSummaryIfBg(e) { if(e.target.id==='summary-panel') closeSummary(); }
+
+function confirmReset() {
+  if(confirm('¿Resetear todos los pedidos? Esta acción no se puede deshacer.')) doReset();
+}
+function doReset() {
+  quantities = {};
+  updateNav(); updateSummaryBadge();
+  renderList(); closeSummary();
+  dismissBanner();
+  showToast('¡Pedidos reseteados!');
+}
+function dismissBanner() { document.getElementById('reset-banner').classList.remove('show'); }
+
+function copyOrder() {
+  let lines = [`PEDIDO SEMANA ${getWeekNumber()} — TABERNA IRLANDESA\n`];
+  let hasAny = false;
+  ['TARDIO','CARBALLO','INBRAEX'].forEach(prov => {
+    const items = Object.entries(quantities)
+      .filter(([k]) => k.startsWith(prov+'||'))
+      .map(([k,v]) => ({ name: k.split('||')[1], qty: v }));
+    if(!items.length) return;
+    hasAny = true;
+    lines.push(`\n── ${prov} ──`);
+    items.forEach(i => lines.push(`  ${i.name}: ${i.qty}`));
+  });
+  if(!hasAny) { showToast('Sin productos'); return; }
+  const text = lines.join('\n');
+  if(navigator.share) {
+    navigator.share({ title: 'Pedido Taberna', text }).catch(()=>{});
+  } else if(navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('¡Copiado!'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('¡Copiado!');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+document.getElementById('search').addEventListener('input', e => renderList(e.target.value));
+
+// Init
+setActiveColor('TARDIO');
+const wk = getWeekNumber();
+const wb = document.getElementById('week-badge');
+wb.textContent = `SEM ${wk}`;
+document.getElementById('sum-week').textContent = wk;
+
+if(isMonday()) {
+  wb.classList.add('monday');
+  wb.textContent = `LUNES · SEM ${wk}`;
+  document.getElementById('reset-banner').classList.add('show');
+}
+
+renderList();
+</script>
+</body>
+</html>
