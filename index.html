@@ -6,558 +6,264 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Pedidos">
-<title>Pedidos Taberna</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Pedidos Irish Tavern</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0a0a0f;
-  --bg2: #111118;
-  --bg3: #1a1a24;
-  --bg4: #22222e;
-  --border: #2a2a38;
-  --border2: #363648;
-  --text: #f0f0f8;
-  --text2: #9090a8;
-  --text3: #5a5a72;
-  --tardio: #3B82F6;
-  --tardio-dim: rgba(59,130,246,0.15);
-  --carballo: #F97316;
-  --carballo-dim: rgba(249,115,22,0.15);
-  --inbraex: #22C55E;
-  --inbraex-dim: rgba(34,197,94,0.15);
-  --danger: #ef4444;
-  --radius: 12px;
-  --font-head: 'Barlow Condensed', sans-serif;
-  --font-body: 'Barlow', sans-serif;
-  --nav-h: 72px;
-  --top-h: 110px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-body); }
-
-/* TOP BAR */
-#topbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: env(safe-area-inset-top, 12px) 16px 0;
-}
-.top-row1 {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-bottom: 10px;
-}
-.app-title {
-  font-family: var(--font-head); font-size: 26px; font-weight: 800;
-  letter-spacing: -0.5px; color: var(--text);
-}
-.app-title span { color: var(--active-color, var(--tardio)); }
-.week-badge {
-  font-family: var(--font-head); font-size: 13px; font-weight: 600;
-  letter-spacing: 0.5px; color: var(--text3);
-  background: var(--bg3); border: 1px solid var(--border);
-  padding: 4px 10px; border-radius: 20px;
-}
-.week-badge.monday { color: var(--danger); border-color: var(--danger); background: rgba(239,68,68,0.1); }
-.top-row2 {
-  display: flex; gap: 8px; align-items: center; padding-bottom: 10px;
-}
-#search {
-  flex: 1; background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; padding: 8px 12px;
-  font-family: var(--font-body); font-size: 15px; color: var(--text);
-  outline: none;
-}
-#search::placeholder { color: var(--text3); }
-#search:focus { border-color: var(--border2); }
-.btn-summary {
-  position: relative;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; padding: 8px 14px;
-  font-family: var(--font-head); font-size: 15px; font-weight: 700;
-  color: var(--text2); cursor: pointer; white-space: nowrap;
-  transition: all .15s;
-}
-.btn-summary.has-items { color: var(--active-color, var(--tardio)); border-color: var(--active-color, var(--tardio)); }
-.btn-summary .badge {
-  position: absolute; top: -6px; right: -6px;
-  background: var(--active-color, var(--tardio));
-  color: #fff; font-size: 10px; font-weight: 700;
-  border-radius: 10px; padding: 1px 5px; min-width: 18px; text-align: center;
-  font-family: var(--font-body);
-}
-
-/* SCROLL AREA */
-#scroll-area {
-  position: fixed;
-  top: var(--top-h); left: 0; right: 0;
-  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-  padding: 8px 0 16px;
-}
-
-/* CATEGORY HEADER */
-.cat-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 14px 16px 6px;
-  position: sticky; top: 0; z-index: 10;
-  background: var(--bg);
-}
-.cat-label {
-  font-family: var(--font-head); font-size: 13px; font-weight: 700;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  color: var(--text3);
-}
-.cat-line { flex: 1; height: 1px; background: var(--border); }
-.cat-count {
-  font-family: var(--font-head); font-size: 11px; font-weight: 600;
-  color: var(--text3); background: var(--bg3); border: 1px solid var(--border);
-  padding: 1px 6px; border-radius: 10px;
-}
-
-/* PRODUCT ROW */
-.prod-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--border);
-  transition: background .1s;
-}
-.prod-row.has-qty { background: var(--active-dim, var(--tardio-dim)); }
-.prod-info { flex: 1; min-width: 0; }
-.prod-name {
-  font-size: 15px; font-weight: 500; color: var(--text);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.prod-row.has-qty .prod-name { color: var(--active-color, var(--tardio)); font-weight: 600; }
-.prod-freq {
-  font-size: 11px; color: var(--text3); margin-top: 1px;
-  font-family: var(--font-head); letter-spacing: .5px;
-}
-.qty-controls {
-  display: flex; align-items: center; gap: 0;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden; flex-shrink: 0;
-}
-.qty-btn {
-  width: 38px; height: 38px; border: none; background: transparent;
-  color: var(--text2); font-size: 20px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .1s; font-family: var(--font-body);
-}
-.qty-btn:active { background: var(--border); }
-.qty-val {
-  width: 38px; text-align: center;
-  font-family: var(--font-head); font-size: 18px; font-weight: 700;
-  color: var(--text);
-  background: transparent; border: none; outline: none;
-  -moz-appearance: textfield;
-}
-.qty-val::-webkit-outer-spin-button,
-.qty-val::-webkit-inner-spin-button { -webkit-appearance: none; }
-.qty-val.active { color: var(--active-color, var(--tardio)); }
-.qty-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
-
-/* BOTTOM NAV */
-#bottomnav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  background: var(--bg2); border-top: 1px solid var(--border);
-  display: flex; align-items: stretch;
-  height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.nav-btn {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; cursor: pointer;
-  border: none; background: transparent; padding: 8px 4px;
-  transition: all .15s;
-}
-.nav-icon {
-  width: 28px; height: 4px; border-radius: 2px;
-  background: var(--text3); transition: all .2s;
-}
-.nav-btn.active .nav-icon { background: var(--nav-color); height: 5px; }
-.nav-btn.active[data-prov="TARDIO"] .nav-icon { background: var(--tardio); }
-.nav-btn.active[data-prov="CARBALLO"] .nav-icon { background: var(--carballo); }
-.nav-btn.active[data-prov="INBRAEX"] .nav-icon { background: var(--inbraex); }
-.nav-label {
-  font-family: var(--font-head); font-size: 13px; font-weight: 700;
-  letter-spacing: 1px; color: var(--text3); transition: all .2s;
-}
-.nav-btn.active[data-prov="TARDIO"] .nav-label { color: var(--tardio); }
-.nav-btn.active[data-prov="CARBALLO"] .nav-label { color: var(--carballo); }
-.nav-btn.active[data-prov="INBRAEX"] .nav-label { color: var(--inbraex); }
-.nav-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: transparent; transition: all .2s;
-}
-.nav-btn.has-order .nav-dot { background: var(--text3); }
-.nav-btn.active[data-prov="TARDIO"].has-order .nav-dot { background: var(--tardio); }
-.nav-btn.active[data-prov="CARBALLO"].has-order .nav-dot { background: var(--carballo); }
-.nav-btn.active[data-prov="INBRAEX"].has-order .nav-dot { background: var(--inbraex); }
-
-/* SUMMARY PANEL */
-#summary-panel {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.7);
-  display: none; align-items: flex-end;
-}
-#summary-panel.open { display: flex; }
-.summary-sheet {
-  width: 100%; max-height: 85vh;
-  background: var(--bg2); border-radius: 20px 20px 0 0;
-  border-top: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  padding-bottom: env(safe-area-inset-bottom, 16px);
-  animation: slideup .25s ease-out;
-}
-@keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.summary-handle {
-  width: 36px; height: 4px; border-radius: 2px;
-  background: var(--border2); margin: 12px auto 0;
-}
-.summary-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px 10px;
-  border-bottom: 1px solid var(--border);
-}
-.summary-title {
-  font-family: var(--font-head); font-size: 22px; font-weight: 800;
-  letter-spacing: -0.3px;
-}
-.summary-close {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--bg3); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 18px; color: var(--text2); border: none;
-}
-.summary-body { flex: 1; overflow-y: auto; padding: 12px 20px; }
-.summary-prov-block { margin-bottom: 20px; }
-.summary-prov-name {
-  font-family: var(--font-head); font-size: 14px; font-weight: 800;
-  letter-spacing: 2px; text-transform: uppercase;
-  padding: 4px 10px; border-radius: 6px; display: inline-block;
-  margin-bottom: 8px;
-}
-.summary-prov-name.TARDIO { color: var(--tardio); background: var(--tardio-dim); }
-.summary-prov-name.CARBALLO { color: var(--carballo); background: var(--carballo-dim); }
-.summary-prov-name.INBRAEX { color: var(--inbraex); background: var(--inbraex-dim); }
-.summary-item {
-  display: flex; justify-content: space-between; align-items: baseline;
-  padding: 6px 0; border-bottom: 1px solid var(--border);
-  font-size: 14px;
-}
-.summary-item:last-child { border-bottom: none; }
-.summary-item-name { color: var(--text); flex: 1; padding-right: 12px; }
-.summary-item-qty {
-  font-family: var(--font-head); font-size: 18px; font-weight: 700;
-  min-width: 28px; text-align: right;
-}
-.summary-empty {
-  text-align: center; padding: 40px 20px;
-  font-family: var(--font-head); font-size: 18px; color: var(--text3);
-  letter-spacing: 1px;
-}
-.summary-footer {
-  display: flex; gap: 10px; padding: 12px 20px 4px;
-  border-top: 1px solid var(--border);
-}
-.btn-action {
-  flex: 1; padding: 14px; border-radius: 12px; border: none; cursor: pointer;
-  font-family: var(--font-head); font-size: 16px; font-weight: 700;
-  letter-spacing: .5px; transition: all .15s;
-}
-.btn-reset { background: var(--bg3); color: var(--danger); border: 1px solid var(--danger); }
-.btn-reset:active { background: rgba(239,68,68,0.15); }
-.btn-copy { background: var(--active-color, var(--tardio)); color: #fff; }
-.btn-copy:active { opacity: 0.85; }
-
-/* RESET BANNER */
-#reset-banner {
-  position: fixed; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px);
-  left: 16px; right: 16px; z-index: 150;
-  background: rgba(239,68,68,0.15); border: 1px solid var(--danger);
-  border-radius: 12px; padding: 12px 16px;
-  display: none; align-items: center; justify-content: space-between; gap: 12px;
-}
-#reset-banner.show { display: flex; }
-.reset-msg { font-size: 13px; color: var(--danger); font-weight: 500; }
-.btn-reset-now {
-  background: var(--danger); color: #fff; border: none; border-radius: 8px;
-  padding: 6px 14px; font-family: var(--font-head); font-size: 14px;
-  font-weight: 700; cursor: pointer; white-space: nowrap;
-}
-.btn-dismiss {
-  background: transparent; border: none; color: var(--text3);
-  font-size: 20px; cursor: pointer; padding: 0 4px;
-}
-
-/* COPIED TOAST */
-#toast {
-  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  background: var(--bg4); border: 1px solid var(--border2);
-  padding: 14px 28px; border-radius: 14px;
-  font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--text);
-  z-index: 300; pointer-events: none; opacity: 0; transition: opacity .2s;
-}
-#toast.show { opacity: 1; }
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--bg4:#22222e;--border:#2a2a38;--border2:#363648;--text:#f0f0f8;--text2:#9090a8;--text3:#5a5a72;--radius:12px;--font-head:'Barlow Condensed',sans-serif;--font-body:'Barlow',sans-serif;--nav-h:60px;--top-h:108px;--active-color:#3B82F6;--active-dim:rgba(59,130,246,0.12)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-body)}
+#topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,10px) 14px 0}
+.top-row1{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px}
+.app-title{font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-.5px}
+.app-title span{color:var(--active-color)}
+.week-badge{font-family:var(--font-head);font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
+.week-badge.monday{color:#ef4444;border-color:#ef4444;background:rgba(239,68,68,.1)}
+.top-row2{display:flex;gap:8px;align-items:center;padding-bottom:9px}
+#search{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-family:var(--font-body);font-size:15px;color:var(--text);outline:none}
+#search::placeholder{color:var(--text3)}
+.btn-summary{position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 13px;font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap}
+.btn-summary.has-items{color:var(--active-color);border-color:var(--active-color)}
+.btn-summary .badge{position:absolute;top:-6px;right:-6px;background:var(--active-color);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 5px;min-width:18px;text-align:center}
+#scroll-area{position:fixed;top:var(--top-h);left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0 14px}
+.cat-header{display:flex;align-items:center;gap:8px;padding:12px 14px 5px;position:sticky;top:0;z-index:10;background:var(--bg)}
+.cat-label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
+.cat-line{flex:1;height:1px;background:var(--border)}
+.cat-count{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--active-color);background:var(--bg3);border:1px solid var(--active-color);padding:1px 6px;border-radius:10px}
+.prod-row{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid var(--border)}
+.prod-row.has-qty{background:var(--active-dim)}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-row.has-qty .prod-name{color:var(--active-color);font-weight:600}
+.prod-freq{font-size:10px;color:var(--text3);margin-top:1px;font-family:var(--font-head)}
+.qty-controls{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.qty-btn{width:36px;height:36px;border:none;background:transparent;color:var(--text2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-btn:active{background:var(--border)}
+.qty-val{width:36px;text-align:center;font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text);background:transparent;border:none;outline:none;-moz-appearance:textfield}
+.qty-val::-webkit-outer-spin-button,.qty-val::-webkit-inner-spin-button{-webkit-appearance:none}
+.qty-val.active{color:var(--active-color)}
+.qty-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+#bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);scrollbar-width:none}
+#bottomnav::-webkit-scrollbar{display:none}
+.nav-btn{flex:0 0 auto;min-width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;padding:6px 8px}
+.nav-icon{width:24px;height:3px;border-radius:2px;background:var(--text3)}
+.nav-btn.active .nav-icon{height:4px;background:var(--nav-color)}
+.nav-label{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--text3);white-space:nowrap}
+.nav-btn.active .nav-label{color:var(--nav-color)}
+.nav-dot{width:4px;height:4px;border-radius:50%;background:transparent}
+.nav-btn.has-order .nav-dot{background:var(--nav-color,var(--text3))}
+#summary-panel{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:none;align-items:flex-end}
+#summary-panel.open{display:flex}
+.summary-sheet{width:100%;max-height:88vh;background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--border);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,16px);animation:slideup .22s ease-out}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.summary-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:11px auto 0}
+.summary-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px 9px;border-bottom:1px solid var(--border)}
+.summary-title{font-family:var(--font-head);font-size:20px;font-weight:800}
+.summary-close{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2)}
+.summary-body{flex:1;overflow-y:auto;padding:10px 18px}
+.summary-prov-block{margin-bottom:18px}
+.summary-prov-name{font-family:var(--font-head);font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:6px;display:inline-block;margin-bottom:7px}
+.summary-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.summary-item:last-child{border-bottom:none}
+.summary-item-name{color:var(--text);flex:1;padding-right:10px}
+.summary-item-qty{font-family:var(--font-head);font-size:17px;font-weight:700;min-width:24px;text-align:right}
+.summary-empty{text-align:center;padding:40px 20px;font-family:var(--font-head);font-size:17px;color:var(--text3);letter-spacing:1px}
+.summary-footer{display:flex;gap:9px;padding:11px 18px 4px;border-top:1px solid var(--border)}
+.btn-action{flex:1;padding:13px;border-radius:11px;border:none;cursor:pointer;font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:.5px}
+.btn-reset{background:var(--bg3);color:#ef4444;border:1px solid #ef4444}
+.btn-copy{background:var(--active-color);color:#fff}
+#reset-banner{position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px);left:14px;right:14px;z-index:150;background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:11px;padding:11px 14px;display:none;align-items:center;justify-content:space-between;gap:10px}
+#reset-banner.show{display:flex}
+.reset-msg{font-size:12px;color:#ef4444;font-weight:500}
+.btn-reset-now{background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-family:var(--font-head);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn-dismiss{background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 3px}
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg4);border:1px solid var(--border2);padding:12px 26px;border-radius:13px;font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text);z-index:300;pointer-events:none;opacity:0;transition:opacity .2s}
+#toast.show{opacity:1}
 </style>
 </head>
 <body>
-
 <div id="topbar">
   <div class="top-row1">
-    <div class="app-title">TABERNA <span id="prov-label">TARDIO</span></div>
-    <div class="week-badge" id="week-badge">SEMANA 0</div>
+    <div class="app-title">IRISH TAVERN <span id="prov-label">TARDIO</span></div>
+    <div class="week-badge" id="week-badge">SEM 0</div>
   </div>
   <div class="top-row2">
     <input type="search" id="search" placeholder="Buscar producto..." autocomplete="off" autocorrect="off" spellcheck="false">
     <button class="btn-summary" id="btn-summary" onclick="openSummary()">
-      PEDIDO
-      <span class="badge" id="summary-badge" style="display:none">0</span>
+      PEDIDO<span class="badge" id="summary-badge" style="display:none">0</span>
     </button>
   </div>
 </div>
-
 <div id="scroll-area"></div>
-
-<div id="bottomnav">
-  <button class="nav-btn active" data-prov="TARDIO" onclick="switchProv('TARDIO')">
-    <div class="nav-icon"></div>
-    <div class="nav-label">TARDIO</div>
-    <div class="nav-dot"></div>
-  </button>
-  <button class="nav-btn" data-prov="CARBALLO" onclick="switchProv('CARBALLO')">
-    <div class="nav-icon"></div>
-    <div class="nav-label">CARBALLO</div>
-    <div class="nav-dot"></div>
-  </button>
-  <button class="nav-btn" data-prov="INBRAEX" onclick="switchProv('INBRAEX')">
-    <div class="nav-icon"></div>
-    <div class="nav-label">INBRAEX</div>
-    <div class="nav-dot"></div>
-  </button>
-</div>
-
+<div id="bottomnav"></div>
 <div id="summary-panel" onclick="closeSummaryIfBg(event)">
   <div class="summary-sheet">
     <div class="summary-handle"></div>
     <div class="summary-head">
-      <div class="summary-title">PEDIDO SEMANA <span id="sum-week">0</span></div>
+      <div class="summary-title">PEDIDO SEM <span id="sum-week">0</span></div>
       <button class="summary-close" onclick="closeSummary()">✕</button>
     </div>
     <div class="summary-body" id="summary-body"></div>
     <div class="summary-footer">
-      <button class="btn-action btn-reset" onclick="confirmReset()">RESETEAR</button>
+      <button class="btn-action btn-reset" onclick="confirmReset()">RESETEAR TODO</button>
       <button class="btn-action btn-copy" id="btn-copy" onclick="copyOrder()">COPIAR PEDIDO</button>
     </div>
   </div>
 </div>
-
 <div id="reset-banner">
-  <div class="reset-msg">🗓 Hoy es lunes — ¿resetear pedidos de la semana anterior?</div>
+  <div class="reset-msg">🗓 Lunes — ¿resetear pedidos anteriores?</div>
   <button class="btn-reset-now" onclick="doReset()">RESETEAR</button>
   <button class="btn-dismiss" onclick="dismissBanner()">✕</button>
 </div>
-
 <div id="toast">¡Copiado!</div>
-
 <script>
-const DATA = {"TARDIO":{"color":"#3B82F6","accent":"#1D4ED8","cats":{"Cervezas":[{"name":"1925 (Mahou)","freq":94},{"name":"Mahou","freq":86},{"name":"Mahou 00 Tostada","freq":71},{"name":"Corona","freq":60},{"name":"Alhambra Red/Roja","freq":49},{"name":"Leffe Triple","freq":43},{"name":"Brutus","freq":35},{"name":"Stella Artois","freq":33},{"name":"Budweiser","freq":27},{"name":"Mahou Maestra","freq":23},{"name":"Centenial","freq":12},{"name":"All Day IPA","freq":10},{"name":"Porter","freq":6},{"name":"Mahou Reserva","freq":5},{"name":"Legendario","freq":2}],"Refrescos y Tónicas":[{"name":"7up","freq":91},{"name":"Tinto Verano Limón","freq":74},{"name":"Tónica Normal","freq":55},{"name":"Tónica Zero","freq":30},{"name":"Wild Berry (Schweppes)","freq":24},{"name":"Ginger Ale Normal","freq":24},{"name":"Soda Normal","freq":11},{"name":"Tónica Pomelo","freq":2},{"name":"Tónica Toque de Lima","freq":1}],"Agua con Gas / Casera":[{"name":"Casera Blanca","freq":73},{"name":"Casera Limón","freq":6}],"Trina":[{"name":"Trina Naranja","freq":20},{"name":"Trina Limón","freq":17}],"Premium Schweppes":[{"name":"Limón Premium","freq":75},{"name":"Naranja Premium","freq":34},{"name":"Tónica Premium","freq":28},{"name":"Ginger Beer","freq":42},{"name":"Pomelo Premium","freq":10},{"name":"Pomelo Normal","freq":6}],"Zumos":[{"name":"Zumo Naranja","freq":31},{"name":"Zumo Piña","freq":31},{"name":"Zumo Melocotón","freq":24},{"name":"Zumo Tomate","freq":13}],"Otros":[{"name":"Red Bull","freq":29},{"name":"Bitter Kas","freq":24},{"name":"Red Bull Zero","freq":5}]}},"CARBALLO":{"color":"#F97316","accent":"#C2410C","cats":{"Barriles":[{"name":"Barril Paulaner Rubia","freq":115},{"name":"Barril Trigo","freq":92},{"name":"Barril Murphys","freq":83},{"name":"Barril Guinness","freq":79},{"name":"Barril Lagunitas","freq":68},{"name":"Barril Hop House 13","freq":58},{"name":"Barril Affligem Doble","freq":25},{"name":"Barril Paulaner Trigo","freq":4},{"name":"Barril Birra Moretti","freq":3},{"name":"Barril Xcampo Gran Reserva","freq":2},{"name":"Barril Águila Sin Filtrar","freq":2},{"name":"Barril Affligem Triple","freq":1}],"Cerveza Botella / Tercio":[{"name":"1870","freq":96},{"name":"Heineken","freq":89},{"name":"Radler (Xcampo)","freq":86},{"name":"Águila Sin Filtrar","freq":79},{"name":"Alcazar","freq":71},{"name":"Xcampo Sin Gluten","freq":66},{"name":"Judas","freq":62},{"name":"Ladrón de Manzanas","freq":61},{"name":"Desperados","freq":59},{"name":"Amstel Oro 00 Tostada","freq":58},{"name":"Xcampo Pilsen","freq":55},{"name":"Muerte Súbita","freq":53},{"name":"Heineken 00","freq":51},{"name":"Birra Moretti (tercio)","freq":35},{"name":"Amstel","freq":35},{"name":"Xcampo","freq":33},{"name":"Águila Dorada","freq":31},{"name":"Xcampo Gran Reserva","freq":14},{"name":"Amstel Oro","freq":4},{"name":"Cruzcampo Pilsen","freq":1},{"name":"Cruzcampo Sin Gluten","freq":1},{"name":"Viejo Madrid","freq":1}],"Ginebra":[{"name":"Seagrams","freq":67},{"name":"Beefeater","freq":57},{"name":"Larios 0,70","freq":41},{"name":"Tanqueray","freq":35},{"name":"Nordés","freq":28},{"name":"Bombay Sapphire","freq":19},{"name":"Tanqueray 00","freq":19},{"name":"Larios 12","freq":17},{"name":"Seagrams 00","freq":10},{"name":"Puerto de Mora","freq":9},{"name":"Puerto de Indias","freq":8},{"name":"G'Vine","freq":8},{"name":"Sipsmith","freq":8},{"name":"Brockmans","freq":6},{"name":"Bombay Original","freq":6},{"name":"Beefeater 00/Light","freq":6},{"name":"Larios Rosé","freq":5},{"name":"Beefeater Black","freq":4},{"name":"Tanqueray Rangpur","freq":4},{"name":"Hendricks","freq":4},{"name":"Monkey 47","freq":4},{"name":"Gordons","freq":4},{"name":"Malfy Limone","freq":3},{"name":"Puerto Exótica","freq":3},{"name":"Gin Rives Normal","freq":2},{"name":"Malfy Naranja","freq":2},{"name":"Beefeater Pink","freq":1},{"name":"Martin Millers","freq":1},{"name":"Bulldog","freq":1},{"name":"Puerto Strawberry","freq":1}],"Whisky / Bourbon":[{"name":"Red Label (JW)","freq":61},{"name":"JB","freq":41},{"name":"Ballantines","freq":31},{"name":"Cutty Sark","freq":29},{"name":"Jameson","freq":24},{"name":"DYC 0,70","freq":23},{"name":"Black Label (JW)","freq":23},{"name":"Dewars","freq":18},{"name":"DYC 8 Años","freq":16},{"name":"Macallan 12","freq":8},{"name":"Cooper Dog","freq":8},{"name":"Laphroaig","freq":7},{"name":"Doble Black (JW)","freq":6},{"name":"Four Roses","freq":6},{"name":"Chivas 18","freq":5},{"name":"Ballantines 10 Años","freq":4},{"name":"Jameson Black Barrel","freq":4},{"name":"Makers Mark","freq":4},{"name":"Connemara","freq":3},{"name":"Chivas 12","freq":3},{"name":"Cardhu 12","freq":2},{"name":"Lagavulin","freq":2},{"name":"100 Pipers","freq":2},{"name":"Jim Beam","freq":2},{"name":"Toki (Suntory)","freq":2},{"name":"Ballantines Light","freq":1},{"name":"DYC 15 Años","freq":1},{"name":"Passport","freq":1},{"name":"Roe & Co","freq":1},{"name":"Hibiki","freq":1},{"name":"Hakushu","freq":1},{"name":"Yamazaki","freq":1}],"Ron":[{"name":"Legendario","freq":50},{"name":"Bacardí Litro","freq":27},{"name":"Brugal","freq":27},{"name":"Zacapa 23","freq":9},{"name":"Cacique","freq":14},{"name":"Pampero","freq":8},{"name":"Santa Teresa","freq":8},{"name":"Havana 7","freq":7},{"name":"Barceló","freq":7},{"name":"Pampero Aniversario","freq":11},{"name":"Brugal Doble Reserva","freq":6},{"name":"Brugal 1888","freq":6},{"name":"Bacardí Spiced","freq":5},{"name":"Flor de Caña 7","freq":5},{"name":"Bumbu XO","freq":5},{"name":"Zacapa XO","freq":4},{"name":"Bumbu Original","freq":4},{"name":"Capitán Morgan Black","freq":4},{"name":"Malibu","freq":4},{"name":"Cacique 500","freq":4},{"name":"Barceló Imperial","freq":2},{"name":"Arehucas","freq":2},{"name":"Don Papa","freq":2},{"name":"Havana 3","freq":1},{"name":"Havana Special","freq":1},{"name":"Santa Teresa 1796","freq":1},{"name":"Flor de Caña 12","freq":1},{"name":"Leblon","freq":1}],"Vodka":[{"name":"Absolut","freq":18},{"name":"Grey Goose","freq":6},{"name":"Ciroc Apple","freq":9},{"name":"Ciroc Berry","freq":4},{"name":"Ciroc Coco","freq":3},{"name":"Eristoff","freq":2},{"name":"Smirnoff","freq":1},{"name":"Eristoff Black","freq":1}],"Tequila":[{"name":"Patrón Silver","freq":6},{"name":"Cuervo Reposado","freq":3},{"name":"1800 Blanco/Repos/Añejo","freq":2},{"name":"Olmeca Reposado","freq":1}],"Licores y Otros":[{"name":"Baileys","freq":78},{"name":"Árabe (caja)","freq":54},{"name":"Salobreña (pack)","freq":48},{"name":"Crema Ruavieja","freq":28},{"name":"Aperol","freq":28},{"name":"Disaronno","freq":24},{"name":"Jagermeister","freq":24},{"name":"Licor Manzana Sin / Mora Sin","freq":23},{"name":"Martini Vibrante","freq":21},{"name":"Mono Dulce","freq":14},{"name":"Petroni Rojo","freq":13},{"name":"Martini Floreale","freq":13},{"name":"Hierbas Ruavieja","freq":11},{"name":"Granadina Rives","freq":9},{"name":"Marie Brizard","freq":8},{"name":"Martini Blanco","freq":7},{"name":"Martini Rojo","freq":7},{"name":"Sheridans","freq":6},{"name":"Anís Mono Dulce","freq":6},{"name":"Baileys Fresa/Strawberry","freq":5},{"name":"Tía María / Kalhua","freq":4},{"name":"Lima Rives","freq":3},{"name":"Vodka Caramelo","freq":3},{"name":"Campari","freq":2},{"name":"Frangelico","freq":2},{"name":"Baileys Chocolate","freq":2},{"name":"Petroni Spritz","freq":2},{"name":"Blue Tropic Rives","freq":2},{"name":"Baileys Almendra","freq":1},{"name":"Carlos I","freq":1},{"name":"Martini Rosso","freq":1}],"Productos Complementarios":[{"name":"Leche","freq":89},{"name":"Leche Sin Lactosa","freq":18},{"name":"ODK Melón","freq":9},{"name":"ODK Sandía","freq":3},{"name":"Puré Melocotón (Peachtree)","freq":2},{"name":"ODK Crema Chocolate","freq":1}]}},"INBRAEX":{"color":"#22C55E","accent":"#15803D","cats":{"Purés de Frutas (Monin)":[{"name":"Puré de Coco","freq":28},{"name":"Puré de Piña","freq":19},{"name":"Puré de Mango","freq":18},{"name":"Puré de Fresa","freq":15},{"name":"Puré de Frutas del Bosque","freq":15},{"name":"Puré de Fruta de la Pasión","freq":13},{"name":"Puré de Frambuesa / Raspberry","freq":9},{"name":"Puré de Banana / Plátano","freq":9},{"name":"Puré de Manzana","freq":9},{"name":"Puré de Ruibarbo","freq":6},{"name":"Puré de Frutos Rojos","freq":3},{"name":"Puré de Melocotón","freq":2}],"Siropes":[{"name":"Sirope de Ron","freq":22},{"name":"Sirope Mojito","freq":7},{"name":"Sirope Spicy Mango","freq":7},{"name":"Sirope Spicy","freq":5},{"name":"Sirope Orgeat","freq":5},{"name":"Sirope Jengibre","freq":3},{"name":"Sirope Pomelo","freq":2},{"name":"Sirope Basil","freq":1}],"Licores (Monin)":[{"name":"Licor de Coco","freq":16},{"name":"Licor de Melocotón","freq":14},{"name":"Licor de Banana","freq":8},{"name":"Licor Bellota Sin Alcohol","freq":7},{"name":"Licor Blue Curaçao","freq":6},{"name":"Licor Bellota Con Alcohol","freq":5},{"name":"Licor de Manzana Con Alcohol","freq":3},{"name":"Licor Italicus","freq":2}],"Curaçao / Bitter":[{"name":"Dry Curaçao","freq":14},{"name":"Dry Curaçao Yuzu","freq":2},{"name":"Crema de Cassis","freq":2}],"Rones y Destilados Especiales":[{"name":"Plantation Xaymaca","freq":3},{"name":"Matusalem 7 Años","freq":3},{"name":"Mezcal Encantado","freq":3},{"name":"Pisco Barsol","freq":3},{"name":"Matusalem 15 Años","freq":2},{"name":"Arehucas","freq":2}],"Tés Fríos y Cold Brew":[{"name":"Tea Frambuesa / Raspberry Tea","freq":7},{"name":"Tea Frutas del Bosque / Frutos Rojos","freq":4},{"name":"Tea Limón / Lemon Tea","freq":3},{"name":"Cold Brew Café / Frappe Café","freq":3},{"name":"Tea Melocotón / Peach Tea","freq":2}],"Otros":[{"name":"Red Bull","freq":5},{"name":"Salsa Chocolate Blanco","freq":3},{"name":"Triple Seco Pierre Ferrand","freq":1}]}}};
+const DATA = {"TARDIO": {"color": "#3B82F6", "cats": {"Cervezas": [{"name": "ALHAMBRA RESERVA 1925 1/3", "freq": 16}, {"name": "MAHOU 5 ESTRELLAS RET 1/3", "freq": 16}, {"name": "MAHOU CORONA 35.5CL", "freq": 12}, {"name": "LEFFE TRIPLE 24BT 1/3", "freq": 10}, {"name": "ALHAMBRA RESERVA ROJA 1/3", "freq": 8}, {"name": "STELLA ARTOIS NR 24 0.33L", "freq": 8}, {"name": "CERVEZA BRUTUS 1/3", "freq": 6}, {"name": "CERVEZA BUDWEISER 0.33X24", "freq": 5}, {"name": "MAHOU 00 TOSTADA RET 1/3", "freq": 5}, {"name": "MAESTRA RET C.24 BOT 1/3", "freq": 3}, {"name": "FOUNDERS CENTENNIAL IPA 35.5CL", "freq": 3}, {"name": "FOUNDERS ALL DAY 35.5CL", "freq": 2}, {"name": "RON LEGENDARIO ELIXIR 7 AÑOS", "freq": 2}]}}, "CARBALLO": {"color": "#F97316", "cats": {"Barriles": [{"name": "GUINNES 30 LITROS", "freq": 12}, {"name": "PAULANER HWEISBEER TRIGO B/30L", "freq": 8}, {"name": "PAULANER ORGMUNCHNER B/30L", "freq": 8}, {"name": "MURPHY BARRIL 30L ROJA", "freq": 8}, {"name": "GUINNESS HOP HOUSE 13 BARRIL 30L", "freq": 6}, {"name": "AFFLIGEM DOUBLE BARRIL 20L", "freq": 4}], "Cerveza Botella": [{"name": "18/70 LA RUBIA BR CAJA 24X33CL", "freq": 10}, {"name": "HEINEKEN 1/3 RET", "freq": 10}, {"name": "EL AGUILA SIN FILTRAR S/RET", "freq": 10}, {"name": "EL ALCAZAR 1/3 S/R C12", "freq": 8}, {"name": "CC SIN GLUTEN 1/3 S/R", "freq": 8}, {"name": "JUDAS 1/3 12 NR", "freq": 8}, {"name": "LADRON DE MANZANAS 1/3 RET", "freq": 8}, {"name": "DESPERADOS BR CAJA 24X33CL", "freq": 6}, {"name": "AMSTEL ORO 0,0 1/3 RET TOSTADA", "freq": 6}, {"name": "CRUZCAMPO RADLER RET 1/3", "freq": 6}, {"name": "AMSTEL 1/3 RET", "freq": 6}, {"name": "HEINEKEN 0,0% 1/3 RET", "freq": 4}, {"name": "BIRRA MORETTI 1/3 NR", "freq": 4}, {"name": "CC 1/3 NORMAL RET", "freq": 4}, {"name": "EL AGUILA BR CAJA 24X33CL", "freq": 3}, {"name": "LDV LIMON BR CAJA 24X33CL", "freq": 2}], "Ginebra": [{"name": "GIN SEAGRAM'S 0.70CL", "freq": 10}, {"name": "BEEFEATER 0.70", "freq": 10}, {"name": "GIN LARIOS 0.70", "freq": 8}, {"name": "GINEBRA TANQUERAY 0.70L", "freq": 6}, {"name": "GIN NORDES 0.70", "freq": 4}, {"name": "TANQUERAY 0,0 0.70CL", "freq": 4}, {"name": "LARIOS 12 0.70", "freq": 3}, {"name": "G.BOMBAY SAPPHIRE 0.70", "freq": 3}, {"name": "G.BOMBAY ORIGINAL 0.70", "freq": 2}, {"name": "CIROC APPLE 0.7", "freq": 2}, {"name": "CIROC RED BERRY 0.7", "freq": 2}, {"name": "COOPER DOG WHKY 0.70CL", "freq": 2}, {"name": "ROKU GIN SELECT EDITION 0.70", "freq": 2}], "Whisky / Bourbon": [{"name": "J.WALKER ETIQUETA ROJA 0.70L", "freq": 8}, {"name": "WHISKY J.B. 700", "freq": 6}, {"name": "BALLANTINES 700CC", "freq": 4}, {"name": "WHISKY JAMESON 0.70CL", "freq": 4}, {"name": "J.WALKER ETIQUETA NEGRA 0.70L", "freq": 3}, {"name": "WHISKY DYC 0.70L", "freq": 3}, {"name": "J.W.DOUBLE BLACK", "freq": 2}, {"name": "WHISKY BUSHMILLS 0.70", "freq": 2}, {"name": "CONNEMARA TUBED 0.70", "freq": 2}], "Ron": [{"name": "RON LEGENDARIO ELIXIR DE CUBA 7 AÑOS", "freq": 6}, {"name": "BACARDI C.BLANCA 1L", "freq": 6}, {"name": "RON BRUGAL AÑEJO 0.70", "freq": 6}, {"name": "RON BRUGAL 1888", "freq": 3}, {"name": "CACIQUE 0.70L", "freq": 3}, {"name": "HAVANA 7 0.70", "freq": 3}, {"name": "HAVANA ORIGEN 0.70CL", "freq": 2}, {"name": "ZACAPA CENT 23Y 70CL", "freq": 2}], "Licores y Otros": [{"name": "LC BAILEYS 0.70L", "freq": 8}, {"name": "APEROL 0.70CL", "freq": 6}, {"name": "AMARETO DISARONNO ORIGINALE 0.70", "freq": 4}, {"name": "CREMA RUAVIEJA 0.70", "freq": 4}, {"name": "SHERIDANS 0.70", "freq": 3}, {"name": "PETRONI VERMU ROJO 1L", "freq": 3}, {"name": "L.MANZANA S/A RIVES", "freq": 2}, {"name": "MARTINI ROSSO 100CL", "freq": 2}, {"name": "CINZANO TO SPRITZ 0.75CL", "freq": 2}, {"name": "SALOBREÑA TINTO BENJAMIN 24U", "freq": 2}], "Complementarios": [{"name": "ODK MIX MELON 75CL", "freq": 4}, {"name": "ODK MIX SANDIA 75CL", "freq": 4}]}}, "INBRAEX": {"color": "#22C55E", "cats": {"Purés de Frutas (Monin)": [{"name": "PURE COCO MONIN 1L", "freq": 14}, {"name": "PURE DE PIÑA MONIN 1L", "freq": 8}, {"name": "PURE MANGO MONIN 1L", "freq": 8}, {"name": "PURE FRESA MONIN 1L", "freq": 6}, {"name": "PURE FRUTAS PASION MONIN 1L", "freq": 6}, {"name": "PURE FRUTOS ROJOS MONIN 1L", "freq": 4}, {"name": "PURE FRAMBUESA MONIN 1L", "freq": 4}, {"name": "PURE PLATANO MONIN 1L", "freq": 4}, {"name": "PURE MANZANA VERDE MONIN 1L", "freq": 4}, {"name": "PURE RHUBARB MONIN 1L", "freq": 3}, {"name": "PURE MELOCOTON MONIN 1L", "freq": 2}], "Siropes (Monin)": [{"name": "SIROPE RON CARIBEAN MONIN 0.70L", "freq": 10}, {"name": "SIROPE MANGO SPICY MONIN 0.70L", "freq": 4}, {"name": "SIROPE SPICY MONIN 0.70L", "freq": 3}, {"name": "SIROPE GINGER MONIN 0.70L", "freq": 3}, {"name": "SIROPE DE ALMENDRA MONIN 0.70L", "freq": 2}, {"name": "SIROPE POMELO ROSA MONIN 0.70L", "freq": 2}], "Licores (Monin)": [{"name": "LICOR COCO MONIN 0.70L", "freq": 6}, {"name": "LICOR MELOCOTON MONIN 0.70L", "freq": 6}, {"name": "LICOR PLATANO MONIN 0.70L", "freq": 4}, {"name": "LICOR BLUE CURACAO MONIN 0.70L", "freq": 3}, {"name": "LICOR DE BELLOTA SABORES EXTREMEÑOS 0.70L", "freq": 3}, {"name": "LICOR BELLOTA S/A 0.70L", "freq": 2}], "Otros": [{"name": "CREMA CHOCOLATE BLANCO MONIN 0.50L", "freq": 3}, {"name": "MEZCAL ARTESANAL ENCANTADO 0.70L", "freq": 2}, {"name": "PISCO BARSOL SELECTO ACHOLADO", "freq": 2}, {"name": "RON MATUSALEM 7 AÑOS 0.70L", "freq": 2}]}}, "SCHWEPPES": {"color": "#EAB308", "cats": {"Tónicas y Aguas": [{"name": "SCH TONICA RET 28X1X200ML", "freq": 16}, {"name": "SCH TONIC ZERO 20CL RET 28U", "freq": 6}, {"name": "SCH SEL TONICA GNR 24X1X20CL", "freq": 4}, {"name": "SCH SODA 200RE 28U", "freq": 3}, {"name": "SCH GINGER LOW CAL RET 200 28U", "freq": 3}, {"name": "SCH WILD BERRY RET 28X1X20CL", "freq": 3}, {"name": "SCH SEL LIMON GNR 12X1X20CL", "freq": 3}, {"name": "SCH SEL POMELO GNR 12X1X20CL", "freq": 2}], "Refrescos": [{"name": "SEVEN UP FREE RET 200", "freq": 10}, {"name": "BITTER KAS NO RET 200 BAND", "freq": 4}, {"name": "TRS NARANJA LOW CAL RET 24X1X2", "freq": 3}, {"name": "TRS LIMON LOW CAL RET 24X1X275", "freq": 3}], "Zumos Vida Batuka": [{"name": "VIDA NARANJA BATU 200SR 24U", "freq": 4}, {"name": "VIDA PINA BATUKA 200SR 24U", "freq": 4}, {"name": "VIDA MELOCOTON BA 200SR 24U", "freq": 3}, {"name": "VIDA TOMATE BATUKA 200SR 24U", "freq": 3}], "Nestea / Té Frío": [{"name": "NESTEA LIMON 1/3 CRISTAL X24", "freq": 8}, {"name": "NESTEA TE VERDE MARACUYA 1/3 CRISTAL X24", "freq": 6}, {"name": "NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X24", "freq": 3}, {"name": "RBLISS LEM MIXER VR20 C24", "freq": 3}, {"name": "RBLISS NAR VR20 C24", "freq": 2}, {"name": "RBLISS SIG TON WTR VR20 C24", "freq": 2}]}}, "COCA COLA": {"color": "#EF4444", "cats": {"Coca Cola": [{"name": "COCACOLA VR237 C24", "freq": 16}, {"name": "COCACOLA ZER VR237 C24", "freq": 8}, {"name": "COCACOLA LIG VR237 C24", "freq": 3}], "Otras": [{"name": "FANTA NAR VR237 C24", "freq": 6}, {"name": "FANTA LIM VR237 C24", "freq": 5}, {"name": "SPRITE VR20 C24", "freq": 3}, {"name": "AQUARIUS LIMON", "freq": 3}, {"name": "AQUARIUS NARANJA", "freq": 3}, {"name": "LIMONADA MINUTE MAID L&N", "freq": 3}], "Royal Bliss": [{"name": "ROYAL BLISS NARANJA 20CL C24", "freq": 4}, {"name": "ROYAL BLISS LIMON 20CL C24", "freq": 4}, {"name": "ROYAL BLISS YUZU 20CL C24", "freq": 3}], "Agua": [{"name": "AQUABONA AGUA 50CL", "freq": 5}], "Monster Energy": [{"name": "MONSTER ENERGY 250ML", "freq": 5}, {"name": "MONSTER ENERGY 500ML", "freq": 4}, {"name": "MONSTER ENERGY ZERO ULTRA SUGAR FREE 250ML", "freq": 3}, {"name": "MONSTER ENERGY ZERO ULTRA SUGAR FREE 500ML", "freq": 3}, {"name": "MONSTER MANGO LOCO 250ML", "freq": 4}, {"name": "MONSTER MANGO LOCO 500ML", "freq": 3}]}}, "BIERWINKEL": {"color": "#8B5CF6", "cats": {"Cervezas Especiales": [{"name": "GULDEN DRAAK FIRE 33CL", "freq": 8}, {"name": "GULDEN DRAAK 33CL", "freq": 8}, {"name": "DELIRIUM TREMENS 33CL", "freq": 6}, {"name": "DELIRIUM RED 33CL", "freq": 6}, {"name": "CHIMAY AZUL 33CL", "freq": 6}, {"name": "GULDEN DRAAK IMPERIAL STOUT 33CL", "freq": 6}, {"name": "HOUBLON CHOUFFE IPA 33CL", "freq": 5}, {"name": "CHIMAY 150 33CL", "freq": 5}, {"name": "LA CHOUFFE 33CL", "freq": 4}, {"name": "CHIMAY BLANCA TRIPLE 33CL", "freq": 4}, {"name": "GULDEN DRAAK SMOKED 33CL", "freq": 4}, {"name": "KASTEEL TRIPLE 33CL", "freq": 3}, {"name": "DUVEL 33CL", "freq": 3}, {"name": "SAINT BERNARDUS ABT SIXTUS 10 33CL", "freq": 2}, {"name": "GUINNESS 8 33CL", "freq": 2}, {"name": "CHIMAY ROJA 33CL", "freq": 2}], "Sidras Magners": [{"name": "MAGNERS SIDRA MANZANA 56.8CL", "freq": 6}, {"name": "MAGNERS SIDRA BERRY 56.8CL", "freq": 5}, {"name": "MAGNERS SIDRA PEAR 56.8CL", "freq": 4}]}}, "CAFENTO": {"color": "#6B7280", "cats": {"Café": [{"name": "STRAC PROF RED E/96 (Café Rojo)", "freq": 14}, {"name": "STRAC PROF DES E/96 (Café Descafeinado)", "freq": 10}], "Chocolates Calientes": [{"name": "MONT N7 CHOC LECHE", "freq": 8}, {"name": "MONT N1 CHOC NEGRO", "freq": 6}, {"name": "MONT N17 CHOC BLANCO", "freq": 4}, {"name": "MONT N8 CHOC NEGR NATA", "freq": 3}], "Infusiones Calientes (Montecelio)": [{"name": "MONT LAT3 NEGRO CANELA", "freq": 6}, {"name": "MONT LATS VERDE MANZANA", "freq": 5}, {"name": "MONT LAT13 ROJO VAINILLA", "freq": 4}, {"name": "MONT LAT18 BLANCO PAPAYA", "freq": 4}, {"name": "MONT LAT21 ROJO CHOCOLATE", "freq": 3}, {"name": "MONT LAT27 LIMON JENGIBRE", "freq": 3}, {"name": "MONT LAT19 ROJO FLORAL", "freq": 3}, {"name": "MONT LAT29 REGALIZ MENTA", "freq": 3}, {"name": "MONT LAT30 MANZANILLA", "freq": 3}, {"name": "MONT LAT31 MENTA", "freq": 3}, {"name": "MONT LAT16 BLANCO LIMA", "freq": 2}, {"name": "MONT MATCHA LATTE", "freq": 2}, {"name": "MONT CURCUMA LATTE", "freq": 2}, {"name": "MONT KOMBUCHA FRUTOS ROJOS", "freq": 2}, {"name": "MONT KOMBUCHA LIMON", "freq": 2}, {"name": "MONT REMOLACHA LATTE", "freq": 1}], "Tés Fríos (Iced Tea Montecelio)": [{"name": "ICED T MONT NEGRO MELOCOTON", "freq": 8}, {"name": "ICED T MONT FRUTAS BOSQUE", "freq": 6}, {"name": "ICED T MONT PIÑA COLADA", "freq": 6}, {"name": "ICED T MONT NEGRO LIMON", "freq": 5}, {"name": "ICED T MONT ROOIBOS MANGO", "freq": 4}, {"name": "ICED T MONT VERDE MOJITO", "freq": 3}, {"name": "ICED T MONT ROOIBOS PERA", "freq": 3}, {"name": "ICED T MONT GUARANA", "freq": 2}], "Complementarios": [{"name": "LECHE CONDENSADA FACIL 840G", "freq": 10}, {"name": "GALLETAS CHOCOLATE C/1.7KG", "freq": 8}, {"name": "GALLETAS SURTIDO FRE/MANZ/NAR", "freq": 3}, {"name": "AZUCAR SOBRES MONT 1250", "freq": 3}, {"name": "COLA-CAO", "freq": 2}, {"name": "SIROPE VAINILLA 1L", "freq": 2}]}}, "BARRERO": {"color": "#EC4899", "cats": {"Licores Especiales": [{"name": "AMARGUINHA 70CL X6", "freq": 8}, {"name": "LIMONCELLO VILLA MASSA 70CL X6", "freq": 5}, {"name": "GIN MARTIN MILLERS 70CL X6", "freq": 4}, {"name": "LICOR BEIRAO 70CL X6", "freq": 5}, {"name": "CACHACA IRACEMA 75CL X12", "freq": 4}, {"name": "EXOTICA GIN 1890 6/70CL", "freq": 4}, {"name": "CREMA CARAMELO AMARGUINHA 70CL X6", "freq": 3}, {"name": "LICOR 43 CHOCOLATE 70CL X6", "freq": 3}, {"name": "CREMA CHOCOLATE AMARGUINHA 70CL X6", "freq": 2}, {"name": "VODKA KHOR PLATINUM 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE CITRUS 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE MARACUYA 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE MELON 70CL X6", "freq": 2}, {"name": "NIKKA FROM THE BARREL 500ML", "freq": 2}, {"name": "WHISKY DUCK TALE 70CL X6", "freq": 2}, {"name": "BUSCAVIDAS WHISKY 70CL X6", "freq": 2}], "Vinos y Espumosos": [{"name": "EL LOCO DE FINCA LA COLINA 75CL X12", "freq": 6}, {"name": "BRUT IMPERIAL MOET CHANDON 75CL", "freq": 4}, {"name": "FOLLADOR PROSECCO TREVISO 75CL X6", "freq": 4}, {"name": "RAMON BILBAO CRIANZA 75CL X6", "freq": 4}, {"name": "LA CHALADA BY VINOS SANZ 75CL X12", "freq": 3}], "Refrescos Premium": [{"name": "FEVERTREE INDIAN TONIC 20CL X24", "freq": 6}, {"name": "NESTEA LIMON 1/3 CRISTAL X24", "freq": 6}, {"name": "FEVERTREE RASPBERRY 20CL X24", "freq": 4}, {"name": "NESTEA TE VERDE MARACUYA 1/3 CRISTAL X24", "freq": 4}, {"name": "NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X24", "freq": 3}, {"name": "AGUA C/GAS PEDRAS VID250 X24", "freq": 3}]}}, "DYEXCO": {"color": "#14B8A6", "cats": {"Destilados": [{"name": "JACK DANIEL'S 0.70 C/6", "freq": 6}, {"name": "JACK DANIEL'S TENNESSEE APPLE 0.70 C/6", "freq": 5}, {"name": "GIN HENDRICK'S 0.70 C/6", "freq": 4}, {"name": "RON BARCELO AÑEJO 0.70 C/12", "freq": 4}, {"name": "HENDRICK'S ANOTHER 0.70 C/6", "freq": 3}, {"name": "LARANXA TRIPLE SECO 0.7 C/6", "freq": 3}, {"name": "VERMOUTH YZAGUIRRE BLANCO 1L C/6", "freq": 2}, {"name": "WHISKY BOLD CREW 0.70 C/6", "freq": 2}]}}, "BEBERCIOS FINOS": {"color": "#F59E0B", "cats": {"Destilados Especiales": [{"name": "LIC PASSOA MARACUYÁ", "freq": 4}, {"name": "VOD RUSSIAN STANDART 1894 LITRO", "freq": 3}, {"name": "PISCO BARSOL SELECTO ACHOLADO", "freq": 3}, {"name": "VOD ABSOLUT VAINILLA 0.7", "freq": 2}, {"name": "LIC DRAMBUIE 0.7", "freq": 2}, {"name": "BITTER FEE BROTHERS CHOCOLATE", "freq": 2}]}}, "JUAN HIDALGO": {"color": "#78716C", "cats": {"Snacks y Aperitivos": [{"name": "PATATAS HH BOLSA 500GR", "freq": 10}, {"name": "KONOS FRITOS BOLSAS 798GR", "freq": 8}, {"name": "PICADITA MIEL-MOSTAZA 1KG", "freq": 6}, {"name": "GOMAS FINI MIX PICA SOUR LITTLE", "freq": 4}]}}, "MONTANERA DE LA DEHESA": {"color": "#84CC16", "cats": {"Cervezas y Destilados": [{"name": "EG 1906 33CL RETORNABLE", "freq": 4}, {"name": "1906 REDVINTAGE 33CLX24 RET", "freq": 3}, {"name": "RON AREHUCAS CARTA ORO 70CL", "freq": 3}, {"name": "EG RIVERA REPOSADA BNR 33X24", "freq": 2}, {"name": "FDE FORMENTERA 70CL", "freq": 2}]}}, "SANCHEZ MONTERO": {"color": "#0EA5E9", "cats": {"Cerveza Ambar": [{"name": "AMBAR ESP LN 1/3 RET 24BOT", "freq": 8}, {"name": "AMBAR 000 TOSTADA 1/3 RET 24BOT", "freq": 6}, {"name": "AMBAR RADLER 1/3 RET 24BOT", "freq": 6}, {"name": "AMBAR LA 125 1/3 12B NR", "freq": 4}]}}};
 
-const COLORS = { TARDIO: '#3B82F6', CARBALLO: '#F97316', INBRAEX: '#22C55E' };
-const DIMS   = { TARDIO: 'rgba(59,130,246,0.15)', CARBALLO: 'rgba(249,115,22,0.15)', INBRAEX: 'rgba(34,197,94,0.15)' };
 
-let currentProv = 'TARDIO';
-let quantities = {};  // key: "PROV||name" => qty
+const PROVS = Object.keys(DATA);
+let currentProv = PROVS[0];
+let quantities = {};
 
-function key(prov, name) { return prov + '||' + name; }
-function getQty(prov, name) { return quantities[key(prov,name)] || 0; }
-function setQty(prov, name, val) {
-  val = Math.max(0, parseInt(val)||0);
+function key(prov, name){ return prov+'||'+name; }
+function getQty(prov, name){ return quantities[key(prov,name)]||0; }
+function setQty(prov, name, val){
+  val = Math.max(0,parseInt(val)||0);
   if(val===0) delete quantities[key(prov,name)];
-  else quantities[key(prov,name)] = val;
-  updateNav();
-  updateSummaryBadge();
+  else quantities[key(prov,name)]=val;
+  updateNav(); updateSummaryBadge();
+}
+function getWeekNumber(){ const d=new Date(),o=new Date(d.getFullYear(),0,1); return Math.ceil((((d-o)/86400000)+o.getDay()+1)/7); }
+function isMonday(){ return new Date().getDay()===1; }
+
+function buildNav(){
+  const nav=document.getElementById('bottomnav');
+  nav.innerHTML=PROVS.map(p=>`<button class="nav-btn${p===currentProv?' active':''}" data-prov="${p}" onclick="switchProv('${p}')" style="--nav-color:${DATA[p].color}"><div class="nav-icon"></div><div class="nav-label">${p.length>8?p.substring(0,8)+'…':p}</div><div class="nav-dot"></div></button>`).join('');
 }
 
-function getWeekNumber() {
-  const d = new Date(); const onejan = new Date(d.getFullYear(),0,1);
-  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
-}
-function isMonday() { return new Date().getDay() === 1; }
-
-function setActiveColor(prov) {
-  const c = COLORS[prov]; const dim = DIMS[prov];
-  document.documentElement.style.setProperty('--active-color', c);
-  document.documentElement.style.setProperty('--active-dim', dim);
-}
-
-function switchProv(prov) {
-  currentProv = prov;
-  setActiveColor(prov);
-  document.getElementById('prov-label').textContent = prov;
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.prov===prov));
-  document.getElementById('search').value = '';
+function switchProv(prov){
+  currentProv=prov;
+  document.getElementById('prov-label').textContent=prov;
+  document.getElementById('prov-label').style.color=DATA[prov].color;
+  document.documentElement.style.setProperty('--active-color',DATA[prov].color);
+  document.documentElement.style.setProperty('--active-dim',hexToRgba(DATA[prov].color,0.12));
+  document.getElementById('search').value='';
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.prov===prov));
   renderList();
-  document.getElementById('scroll-area').scrollTop = 0;
+  document.getElementById('scroll-area').scrollTop=0;
 }
 
-function renderList(filter) {
-  const q = (filter || document.getElementById('search').value || '').toLowerCase().trim();
-  const prov = DATA[currentProv];
-  const sa = document.getElementById('scroll-area');
-  let html = '';
+function hexToRgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
 
-  Object.entries(prov.cats).forEach(([cat, items]) => {
-    const filtered = q ? items.filter(p => p.name.toLowerCase().includes(q)) : items;
+function renderList(filter){
+  const q=(filter||document.getElementById('search').value||'').toLowerCase().trim();
+  const prov=DATA[currentProv];
+  const color=DATA[currentProv].color;
+  let html='';
+  Object.entries(prov.cats).forEach(([cat,items])=>{
+    const filtered=q?items.filter(p=>p.name.toLowerCase().includes(q)):items;
     if(!filtered.length) return;
-    const catQtyItems = filtered.filter(p => getQty(currentProv, p.name) > 0);
-    html += `<div class="cat-header">
-      <div class="cat-label">${cat}</div>
-      <div class="cat-line"></div>
-      ${catQtyItems.length ? `<div class="cat-count" style="color:${COLORS[currentProv]};border-color:${COLORS[currentProv]}">${catQtyItems.length}</div>` : ''}
-    </div>`;
-    filtered.forEach(p => {
-      const qty = getQty(currentProv, p.name);
-      const hasQty = qty > 0;
-      html += `<div class="prod-row ${hasQty?'has-qty':''}" id="row-${CSS.escape(currentProv+'||'+p.name)}">
+    const withQty=filtered.filter(p=>getQty(currentProv,p.name)>0);
+    html+=`<div class="cat-header"><div class="cat-label">${cat}</div><div class="cat-line"></div>${withQty.length?`<div class="cat-count">${withQty.length}</div>`:''}</div>`;
+    filtered.forEach(p=>{
+      const qty=getQty(currentProv,p.name);
+      const hasQty=qty>0;
+      const esc=p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      html+=`<div class="prod-row ${hasQty?'has-qty':''}">
         <div class="prod-info">
           <div class="prod-name">${p.name}</div>
-          <div class="prod-freq">${p.freq} pedidos históricos</div>
+          <div class="prod-freq">${p.freq} pedidos</div>
         </div>
         <div class="qty-controls">
-          <button class="qty-btn" onclick="adj('${currentProv}','${p.name.replace(/'/g,"\\'")}', -1)">−</button>
+          <button class="qty-btn" onclick="adj('${currentProv}','${esc}',-1)">−</button>
           <div class="qty-sep"></div>
-          <input class="qty-val ${hasQty?'active':''}" type="number" min="0" value="${qty||''}"
-            placeholder="0"
-            onchange="setQtyAndRefresh('${currentProv}','${p.name.replace(/'/g,"\\'")}',this.value)"
+          <input class="qty-val ${hasQty?'active':''}" type="number" min="0" value="${qty||''}" placeholder="0"
+            onchange="setQtyR('${currentProv}','${esc}',this.value)"
             onfocus="this.select()">
           <div class="qty-sep"></div>
-          <button class="qty-btn" onclick="adj('${currentProv}','${p.name.replace(/'/g,"\\'")}', 1)">+</button>
+          <button class="qty-btn" onclick="adj('${currentProv}','${esc}',1)">+</button>
         </div>
       </div>`;
     });
   });
-
-  if(!html) html = `<div style="text-align:center;padding:60px 20px;color:var(--text3);font-family:var(--font-head);font-size:18px;letter-spacing:1px">SIN RESULTADOS</div>`;
-  sa.innerHTML = html;
+  if(!html) html=`<div style="text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--font-head);font-size:16px;letter-spacing:1px">SIN RESULTADOS</div>`;
+  document.getElementById('scroll-area').innerHTML=html;
 }
 
-function adj(prov, name, delta) {
-  const newVal = Math.max(0, getQty(prov, name) + delta);
-  setQty(prov, name, newVal);
-  renderList();
-}
-function setQtyAndRefresh(prov, name, val) {
-  setQty(prov, name, val);
-  renderList();
-}
+function adj(prov,name,delta){ setQty(prov,name,Math.max(0,getQty(prov,name)+delta)); renderList(); }
+function setQtyR(prov,name,val){ setQty(prov,name,val); renderList(); }
 
-function updateNav() {
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    const p = b.dataset.prov;
-    const hasAny = Object.keys(quantities).some(k => k.startsWith(p+'||'));
-    b.classList.toggle('has-order', hasAny);
+function updateNav(){
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const p=b.dataset.prov;
+    const has=Object.keys(quantities).some(k=>k.startsWith(p+'||'));
+    b.classList.toggle('has-order',has);
   });
 }
 
-function updateSummaryBadge() {
-  const total = Object.keys(quantities).length;
-  const badge = document.getElementById('summary-badge');
-  const btn = document.getElementById('btn-summary');
-  badge.textContent = total;
-  badge.style.display = total > 0 ? 'block' : 'none';
-  btn.classList.toggle('has-items', total > 0);
+function updateSummaryBadge(){
+  const total=Object.keys(quantities).length;
+  const badge=document.getElementById('summary-badge');
+  badge.textContent=total;
+  badge.style.display=total>0?'block':'none';
+  document.getElementById('btn-summary').classList.toggle('has-items',total>0);
 }
 
-function openSummary() {
-  const body = document.getElementById('summary-body');
-  let html = '';
-  let hasAny = false;
-  ['TARDIO','CARBALLO','INBRAEX'].forEach(prov => {
-    const items = Object.entries(quantities)
-      .filter(([k]) => k.startsWith(prov+'||'))
-      .map(([k,v]) => ({ name: k.split('||')[1], qty: v }));
+function openSummary(){
+  let html=''; let hasAny=false;
+  PROVS.forEach(prov=>{
+    const items=Object.entries(quantities).filter(([k])=>k.startsWith(prov+'||')).map(([k,v])=>({name:k.split('||')[1],qty:v}));
     if(!items.length) return;
-    hasAny = true;
-    html += `<div class="summary-prov-block">
-      <div class="summary-prov-name ${prov}">${prov}</div>`;
-    items.forEach(i => {
-      html += `<div class="summary-item">
-        <span class="summary-item-name">${i.name}</span>
-        <span class="summary-item-qty" style="color:${COLORS[prov]}">${i.qty}</span>
-      </div>`;
-    });
-    html += '</div>';
+    hasAny=true;
+    const c=DATA[prov].color;
+    html+=`<div class="summary-prov-block"><div class="summary-prov-name" style="color:${c};background:${hexToRgba(c,.15)}">${prov}</div>`;
+    items.forEach(i=>{ html+=`<div class="summary-item"><span class="summary-item-name">${i.name}</span><span class="summary-item-qty" style="color:${c}">${i.qty}</span></div>`; });
+    html+='</div>';
   });
-  if(!hasAny) html = '<div class="summary-empty">NO HAY PRODUCTOS<br>EN EL PEDIDO</div>';
-  body.innerHTML = html;
-  document.getElementById('sum-week').textContent = getWeekNumber();
+  if(!hasAny) html='<div class="summary-empty">SIN PRODUCTOS<br>EN EL PEDIDO</div>';
+  document.getElementById('summary-body').innerHTML=html;
+  document.getElementById('sum-week').textContent=getWeekNumber();
+  document.getElementById('btn-copy').style.background=DATA[currentProv].color;
   document.getElementById('summary-panel').classList.add('open');
-  document.getElementById('btn-copy').style.background = COLORS[currentProv];
 }
-function closeSummary() { document.getElementById('summary-panel').classList.remove('open'); }
-function closeSummaryIfBg(e) { if(e.target.id==='summary-panel') closeSummary(); }
+function closeSummary(){ document.getElementById('summary-panel').classList.remove('open'); }
+function closeSummaryIfBg(e){ if(e.target.id==='summary-panel') closeSummary(); }
 
-function confirmReset() {
-  if(confirm('¿Resetear todos los pedidos? Esta acción no se puede deshacer.')) doReset();
-}
-function doReset() {
-  quantities = {};
-  updateNav(); updateSummaryBadge();
-  renderList(); closeSummary();
-  dismissBanner();
-  showToast('¡Pedidos reseteados!');
-}
-function dismissBanner() { document.getElementById('reset-banner').classList.remove('show'); }
+function confirmReset(){ if(confirm('¿Resetear todos los pedidos?')) doReset(); }
+function doReset(){ quantities={}; updateNav(); updateSummaryBadge(); renderList(); closeSummary(); dismissBanner(); showToast('¡Reseteado!'); }
+function dismissBanner(){ document.getElementById('reset-banner').classList.remove('show'); }
 
-function copyOrder() {
-  let lines = [`PEDIDO SEMANA ${getWeekNumber()} — TABERNA IRLANDESA\n`];
-  let hasAny = false;
-  ['TARDIO','CARBALLO','INBRAEX'].forEach(prov => {
-    const items = Object.entries(quantities)
-      .filter(([k]) => k.startsWith(prov+'||'))
-      .map(([k,v]) => ({ name: k.split('||')[1], qty: v }));
+function copyOrder(){
+  let lines=[`PEDIDO SEMANA ${getWeekNumber()} — IRISH TAVERN\n`];
+  let hasAny=false;
+  PROVS.forEach(prov=>{
+    const items=Object.entries(quantities).filter(([k])=>k.startsWith(prov+'||')).map(([k,v])=>({name:k.split('||')[1],qty:v}));
     if(!items.length) return;
-    hasAny = true;
+    hasAny=true;
     lines.push(`\n── ${prov} ──`);
-    items.forEach(i => lines.push(`  ${i.name}: ${i.qty}`));
+    items.forEach(i=>lines.push(`  ${i.name}: ${i.qty}`));
   });
-  if(!hasAny) { showToast('Sin productos'); return; }
-  const text = lines.join('\n');
-  if(navigator.share) {
-    navigator.share({ title: 'Pedido Taberna', text }).catch(()=>{});
-  } else if(navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => showToast('¡Copiado!'));
-  } else {
-    const ta = document.createElement('textarea');
-    ta.value = text; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta); showToast('¡Copiado!');
-  }
+  if(!hasAny){ showToast('Sin productos'); return; }
+  const text=lines.join('\n');
+  if(navigator.share){ navigator.share({title:'Pedido Irish Tavern',text}).catch(()=>{}); }
+  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast('¡Copiado!')); }
+  else{ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('¡Copiado!'); }
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1800);
-}
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
 
-document.getElementById('search').addEventListener('input', e => renderList(e.target.value));
+document.getElementById('search').addEventListener('input',e=>renderList(e.target.value));
 
 // Init
-setActiveColor('TARDIO');
-const wk = getWeekNumber();
-const wb = document.getElementById('week-badge');
-wb.textContent = `SEM ${wk}`;
-document.getElementById('sum-week').textContent = wk;
-
-if(isMonday()) {
-  wb.classList.add('monday');
-  wb.textContent = `LUNES · SEM ${wk}`;
-  document.getElementById('reset-banner').classList.add('show');
-}
-
+const wk=getWeekNumber();
+const wb=document.getElementById('week-badge');
+wb.textContent=`SEM ${wk}`;
+document.getElementById('sum-week').textContent=wk;
+if(isMonday()){ wb.classList.add('monday'); wb.textContent=`LUNES · SEM ${wk}`; document.getElementById('reset-banner').classList.add('show'); }
+document.getElementById('prov-label').style.color=DATA[PROVS[0]].color;
+document.documentElement.style.setProperty('--active-color',DATA[PROVS[0]].color);
+buildNav();
 renderList();
 </script>
 </body>
