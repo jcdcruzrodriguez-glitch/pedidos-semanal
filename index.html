@@ -1,270 +1,285 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pedidos">
-<title>Pedidos Irish Tavern</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--bg4:#22222e;--border:#2a2a38;--border2:#363648;--text:#f0f0f8;--text2:#9090a8;--text3:#5a5a72;--radius:12px;--font-head:'Barlow Condensed',sans-serif;--font-body:'Barlow',sans-serif;--nav-h:60px;--top-h:108px;--active-color:#3B82F6;--active-dim:rgba(59,130,246,0.12)}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font-body)}
-#topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,10px) 14px 0}
-.top-row1{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px}
-.app-title{font-family:var(--font-head);font-size:22px;font-weight:800;letter-spacing:-.5px}
-.app-title span{color:var(--active-color)}
-.week-badge{font-family:var(--font-head);font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:3px 9px;border-radius:20px}
-.week-badge.monday{color:#ef4444;border-color:#ef4444;background:rgba(239,68,68,.1)}
-.top-row2{display:flex;gap:8px;align-items:center;padding-bottom:9px}
-#search{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 11px;font-family:var(--font-body);font-size:15px;color:var(--text);outline:none}
-#search::placeholder{color:var(--text3)}
-.btn-summary{position:relative;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:7px 13px;font-family:var(--font-head);font-size:14px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap}
-.btn-summary.has-items{color:var(--active-color);border-color:var(--active-color)}
-.btn-summary .badge{position:absolute;top:-6px;right:-6px;background:var(--active-color);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 5px;min-width:18px;text-align:center}
-#scroll-area{position:fixed;top:var(--top-h);left:0;right:0;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0 14px}
-.cat-header{display:flex;align-items:center;gap:8px;padding:12px 14px 5px;position:sticky;top:0;z-index:10;background:var(--bg)}
-.cat-label{font-family:var(--font-head);font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
-.cat-line{flex:1;height:1px;background:var(--border)}
-.cat-count{font-family:var(--font-head);font-size:11px;font-weight:600;color:var(--active-color);background:var(--bg3);border:1px solid var(--active-color);padding:1px 6px;border-radius:10px}
-.prod-row{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid var(--border)}
-.prod-row.has-qty{background:var(--active-dim)}
-.prod-info{flex:1;min-width:0}
-.prod-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prod-row.has-qty .prod-name{color:var(--active-color);font-weight:600}
-.prod-freq{font-size:10px;color:var(--text3);margin-top:1px;font-family:var(--font-head)}
-.qty-controls{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
-.qty-btn{width:36px;height:36px;border:none;background:transparent;color:var(--text2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.qty-btn:active{background:var(--border)}
-.qty-val{width:36px;text-align:center;font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text);background:transparent;border:none;outline:none;-moz-appearance:textfield}
-.qty-val::-webkit-outer-spin-button,.qty-val::-webkit-inner-spin-button{-webkit-appearance:none}
-.qty-val.active{color:var(--active-color)}
-.qty-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
-#bottomnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--bg2);border-top:1px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);scrollbar-width:none}
-#bottomnav::-webkit-scrollbar{display:none}
-.nav-btn{flex:0 0 auto;min-width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;padding:6px 8px}
-.nav-icon{width:24px;height:3px;border-radius:2px;background:var(--text3)}
-.nav-btn.active .nav-icon{height:4px;background:var(--nav-color)}
-.nav-label{font-family:var(--font-head);font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--text3);white-space:nowrap}
-.nav-btn.active .nav-label{color:var(--nav-color)}
-.nav-dot{width:4px;height:4px;border-radius:50%;background:transparent}
-.nav-btn.has-order .nav-dot{background:var(--nav-color,var(--text3))}
-#summary-panel{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:none;align-items:flex-end}
-#summary-panel.open{display:flex}
-.summary-sheet{width:100%;max-height:88vh;background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--border);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,16px);animation:slideup .22s ease-out}
-@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.summary-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:11px auto 0}
-.summary-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px 9px;border-bottom:1px solid var(--border)}
-.summary-title{font-family:var(--font-head);font-size:20px;font-weight:800}
-.summary-close{width:30px;height:30px;border-radius:50%;background:var(--bg3);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text2)}
-.summary-body{flex:1;overflow-y:auto;padding:10px 18px}
-.summary-prov-block{margin-bottom:18px}
-.summary-prov-name{font-family:var(--font-head);font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;border-radius:6px;display:inline-block;margin-bottom:7px}
-.summary-item{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
-.summary-item:last-child{border-bottom:none}
-.summary-item-name{color:var(--text);flex:1;padding-right:10px}
-.summary-item-qty{font-family:var(--font-head);font-size:17px;font-weight:700;min-width:24px;text-align:right}
-.summary-empty{text-align:center;padding:40px 20px;font-family:var(--font-head);font-size:17px;color:var(--text3);letter-spacing:1px}
-.summary-footer{display:flex;gap:9px;padding:11px 18px 4px;border-top:1px solid var(--border)}
-.btn-action{flex:1;padding:13px;border-radius:11px;border:none;cursor:pointer;font-family:var(--font-head);font-size:15px;font-weight:700;letter-spacing:.5px}
-.btn-reset{background:var(--bg3);color:#ef4444;border:1px solid #ef4444}
-.btn-copy{background:var(--active-color);color:#fff}
-#reset-banner{position:fixed;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 8px);left:14px;right:14px;z-index:150;background:rgba(239,68,68,.12);border:1px solid #ef4444;border-radius:11px;padding:11px 14px;display:none;align-items:center;justify-content:space-between;gap:10px}
-#reset-banner.show{display:flex}
-.reset-msg{font-size:12px;color:#ef4444;font-weight:500}
-.btn-reset-now{background:#ef4444;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-family:var(--font-head);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-.btn-dismiss{background:transparent;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 3px}
-#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg4);border:1px solid var(--border2);padding:12px 26px;border-radius:13px;font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--text);z-index:300;pointer-events:none;opacity:0;transition:opacity .2s}
-#toast.show{opacity:1}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#08110d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pedidos Irish">
+  <title>Pedidos · Irish Tavern</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07100c;--panel:#0d1913;--panel2:#122219;--line:#20352a;--text:#f4f7f5;--muted:#91a49a;--faint:#5f7569;--brand:#22c55e;--brand-soft:rgba(34,197,94,.13);--danger:#fb7185;--shadow:0 20px 55px rgba(0,0,0,.4)}
+    *{box-sizing:border-box}
+    html{background:var(--bg);scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -180px,#173a26 0,transparent 42%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+    button,input{font:inherit}
+    button{color:inherit}
+    .top{position:sticky;top:0;z-index:20;background:rgba(7,16,12,.93);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+    .title-row,.supplier-head,.order-top,.summary-head,.summary-actions{display:flex;align-items:center}
+    .title-row{justify-content:space-between;gap:12px;margin-bottom:10px}
+    .eyebrow{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#6ee7a2;margin-bottom:2px}
+    h1{font-size:21px;line-height:1.05;margin:0;letter-spacing:-.02em}
+    .week{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;color:var(--muted)}
+    .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+    .search-wrap{position:relative}
+    .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+    #search{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:none;padding:0 38px 0 36px;font-size:16px}
+    #search:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+    .clear-search{display:none;position:absolute;right:5px;top:5px;width:34px;height:34px;border:0;background:transparent;color:var(--muted);font-size:18px}
+    .clear-search.show{display:block}
+    .scope-btn{height:44px;min-width:61px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:12px;font-weight:800;color:var(--muted);padding:0 10px}
+    .scope-btn.active{border-color:var(--brand);color:var(--brand);background:var(--brand-soft)}
+    .supplier-nav{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px 14px 2px;scroll-padding:14px}
+    .supplier-nav::-webkit-scrollbar{display:none}
+    .supplier-tab{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 12px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap;position:relative}
+    .supplier-tab.active{color:var(--supplier);border-color:var(--supplier);background:color-mix(in srgb,var(--supplier) 13%,var(--panel))}
+    .supplier-tab.has-items::after{content:"";position:absolute;right:4px;top:4px;width:6px;height:6px;border-radius:50%;background:var(--supplier)}
+    main{max-width:760px;margin:0 auto;padding:12px 14px 24px}
+    .supplier-head{justify-content:space-between;gap:12px;margin:8px 2px 12px}
+    .supplier-name{font-size:23px;font-weight:900;letter-spacing:-.025em;margin:0}
+    .supplier-meta{color:var(--muted);font-size:12px;margin-top:3px}
+    .only-selected{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 10px;font-size:11px;font-weight:800;color:var(--muted);white-space:nowrap}
+    .only-selected.active{color:var(--brand);border-color:var(--brand);background:var(--brand-soft)}
+    .global-label{margin:18px 1px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:900;color:var(--supplier)}
+    .category{margin-bottom:16px;border:1px solid var(--line);border-radius:16px;background:rgba(13,25,19,.75);overflow:hidden}
+    .category-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);background:rgba(18,34,25,.74)}
+    .category-title h2{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}
+    .category-count{font-size:10px;font-weight:800;color:var(--faint)}
+    .product{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;min-height:61px;padding:8px 9px 8px 12px;border-bottom:1px solid rgba(32,53,42,.72)}
+    .product:last-child{border-bottom:0}
+    .product.selected{background:var(--brand-soft)}
+    .product-name{font-size:13.5px;line-height:1.25;font-weight:650;overflow-wrap:anywhere}
+    .product.selected .product-name{color:var(--brand)}
+    .product-note{font-size:10px;color:var(--faint);margin-top:3px}
+    .controls{display:grid;grid-template-columns:38px 42px 38px;height:40px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg)}
+    .qty-btn{border:0;background:transparent;font-size:21px;color:var(--muted);padding:0;touch-action:manipulation}
+    .qty-btn:active{background:var(--line)}
+    .qty{width:42px;border:0;border-inline:1px solid var(--line);background:transparent;color:var(--text);font-size:16px;font-weight:850;text-align:center;outline:none;-moz-appearance:textfield;padding:0}
+    .qty::-webkit-outer-spin-button,.qty::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+    .selected .qty{color:var(--brand)}
+    .custom-actions{display:flex;gap:8px;margin:8px 1px 18px}
+    .ghost-btn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:12px;padding:11px 13px;font-size:12px;font-weight:800}
+    .empty{border:1px dashed var(--line);border-radius:16px;padding:40px 20px;text-align:center;color:var(--muted)}
+    .empty strong{display:block;color:var(--text);margin-bottom:5px}
+    .order-bar{position:fixed;z-index:30;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:736px;margin:auto;border:1px solid #2d5c40;border-radius:16px;background:rgba(15,35,23,.96);box-shadow:var(--shadow);padding:10px 11px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(16px)}
+    .order-info{min-width:0;flex:1}
+    .order-info strong{display:block;font-size:14px}
+    .order-info span{display:block;color:var(--muted);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .open-order{border:0;border-radius:11px;background:#22c55e;color:#041108;padding:11px 14px;font-size:12px;font-weight:900;white-space:nowrap}
+    dialog{width:100%;max-width:760px;max-height:min(88vh,850px);margin:auto 0 0;border:1px solid var(--line);border-radius:22px 22px 0 0;background:var(--panel);color:var(--text);padding:0;box-shadow:var(--shadow)}
+    dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(3px)}
+    .summary{display:flex;flex-direction:column;max-height:min(88vh,850px)}
+    .handle{width:38px;height:4px;background:#3b5045;border-radius:4px;margin:9px auto 2px}
+    .summary-head{justify-content:space-between;padding:10px 16px 12px;border-bottom:1px solid var(--line)}
+    .summary-head h2{font-size:20px;margin:0}
+    .close{width:36px;height:36px;border:0;border-radius:50%;background:var(--panel2);font-size:18px;color:var(--muted)}
+    .summary-body{overflow-y:auto;padding:13px 16px 6px}
+    .order-supplier{margin-bottom:18px}
+    .order-top{justify-content:space-between;gap:10px;margin-bottom:5px}
+    .order-top h3{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--supplier);margin:0}
+    .order-top span{font-size:10px;color:var(--faint)}
+    .order-top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+    .supplier-share{border:1px solid color-mix(in srgb,var(--supplier) 55%,var(--line));border-radius:8px;background:color-mix(in srgb,var(--supplier) 12%,var(--panel2));color:var(--supplier);padding:6px 8px;font-size:10px;font-weight:900;letter-spacing:.03em}
+    .order-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.25}
+    .order-line b{color:var(--supplier);font-size:16px}
+    .summary-empty{text-align:center;color:var(--muted);padding:42px 15px}
+    .summary-actions{gap:8px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel)}
+    .action{flex:1;min-height:44px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);font-size:12px;font-weight:900}
+    .action.primary{background:#22c55e;color:#041108;border-color:#22c55e}
+    .action.danger{color:var(--danger);border-color:rgba(251,113,133,.45);flex:0 0 auto;padding-inline:12px}
+    .toast{position:fixed;z-index:60;left:50%;top:50%;transform:translate(-50%,-45%);padding:11px 16px;border:1px solid var(--line);border-radius:12px;background:#172a20;box-shadow:var(--shadow);font-size:13px;font-weight:800;opacity:0;pointer-events:none;transition:.18s}
+    .toast.show{opacity:1;transform:translate(-50%,-50%)}
+    @media(min-width:760px){dialog{margin:auto;border-radius:22px}.top{padding-inline:calc((100vw - 732px)/2)}.supplier-nav{max-width:760px;margin:auto}.order-bar{left:50%;right:auto;width:736px;transform:translateX(-50%)}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
 </head>
 <body>
-<div id="topbar">
-  <div class="top-row1">
-    <div class="app-title">IRISH TAVERN <span id="prov-label">TARDIO</span></div>
-    <div class="week-badge" id="week-badge">SEM 0</div>
-  </div>
-  <div class="top-row2">
-    <input type="search" id="search" placeholder="Buscar producto..." autocomplete="off" autocorrect="off" spellcheck="false">
-    <button class="btn-summary" id="btn-summary" onclick="openSummary()">
-      PEDIDO<span class="badge" id="summary-badge" style="display:none">0</span>
-    </button>
-  </div>
-</div>
-<div id="scroll-area"></div>
-<div id="bottomnav"></div>
-<div id="summary-panel" onclick="closeSummaryIfBg(event)">
-  <div class="summary-sheet">
-    <div class="summary-handle"></div>
-    <div class="summary-head">
-      <div class="summary-title">PEDIDO SEM <span id="sum-week">0</span></div>
-      <button class="summary-close" onclick="closeSummary()">✕</button>
+  <header class="top">
+    <div class="title-row">
+      <div><div class="eyebrow">The Irish Tavern</div><h1>Pedido semanal</h1></div>
+      <div class="week" id="week"></div>
     </div>
-    <div class="summary-body" id="summary-body"></div>
-    <div class="summary-footer">
-      <button class="btn-action btn-reset" onclick="confirmReset()">RESETEAR TODO</button>
-      <button class="btn-action btn-copy" id="btn-copy" onclick="copyOrder()">COPIAR PEDIDO</button>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="search" type="search" placeholder="Buscar producto…" autocomplete="off" autocapitalize="off">
+        <button class="clear-search" id="clearSearch" aria-label="Borrar búsqueda">×</button>
+      </div>
+      <button class="scope-btn" id="scopeBtn" type="button" aria-pressed="false">Todos</button>
     </div>
+  </header>
+  <nav class="supplier-nav" id="supplierNav" aria-label="Proveedores"></nav>
+  <main id="catalog"></main>
+
+  <div class="order-bar" id="orderBar">
+    <div class="order-info"><strong id="orderCount">Pedido vacío</strong><span id="orderDetail">Los cambios se guardan en este teléfono</span></div>
+    <button class="open-order" id="openOrder" type="button">VER PEDIDO</button>
   </div>
-</div>
-<div id="reset-banner">
-  <div class="reset-msg">🗓 Lunes — ¿resetear pedidos anteriores?</div>
-  <button class="btn-reset-now" onclick="doReset()">RESETEAR</button>
-  <button class="btn-dismiss" onclick="dismissBanner()">✕</button>
-</div>
-<div id="toast">¡Copiado!</div>
-<script>
-const DATA = {"TARDIO": {"color": "#3B82F6", "cats": {"Cervezas": [{"name": "ALHAMBRA RESERVA 1925 1/3", "freq": 16}, {"name": "MAHOU 5 ESTRELLAS RET 1/3", "freq": 16}, {"name": "MAHOU CORONA 35.5CL", "freq": 12}, {"name": "LEFFE TRIPLE 24BT 1/3", "freq": 10}, {"name": "ALHAMBRA RESERVA ROJA 1/3", "freq": 8}, {"name": "STELLA ARTOIS NR 24 0.33L", "freq": 8}, {"name": "CERVEZA BRUTUS 1/3", "freq": 6}, {"name": "CERVEZA BUDWEISER 0.33X24", "freq": 5}, {"name": "MAHOU 00 TOSTADA RET 1/3", "freq": 5}, {"name": "MAESTRA RET C.24 BOT 1/3", "freq": 3}, {"name": "FOUNDERS CENTENNIAL IPA 35.5CL", "freq": 3}, {"name": "FOUNDERS ALL DAY 35.5CL", "freq": 2}, {"name": "RON LEGENDARIO ELIXIR 7 AÑOS", "freq": 2}]}}, "CARBALLO": {"color": "#F97316", "cats": {"Barriles": [{"name": "GUINNES 30 LITROS", "freq": 12}, {"name": "PAULANER HWEISBEER TRIGO B/30L", "freq": 8}, {"name": "PAULANER ORGMUNCHNER B/30L", "freq": 8}, {"name": "MURPHY BARRIL 30L ROJA", "freq": 8}, {"name": "GUINNESS HOP HOUSE 13 BARRIL 30L", "freq": 6}, {"name": "AFFLIGEM DOUBLE BARRIL 20L", "freq": 4}], "Cerveza Botella": [{"name": "18/70 LA RUBIA BR CAJA 24X33CL", "freq": 10}, {"name": "HEINEKEN 1/3 RET", "freq": 10}, {"name": "EL AGUILA SIN FILTRAR S/RET", "freq": 10}, {"name": "EL ALCAZAR 1/3 S/R C12", "freq": 8}, {"name": "CC SIN GLUTEN 1/3 S/R", "freq": 8}, {"name": "JUDAS 1/3 12 NR", "freq": 8}, {"name": "LADRON DE MANZANAS 1/3 RET", "freq": 8}, {"name": "DESPERADOS BR CAJA 24X33CL", "freq": 6}, {"name": "AMSTEL ORO 0,0 1/3 RET TOSTADA", "freq": 6}, {"name": "CRUZCAMPO RADLER RET 1/3", "freq": 6}, {"name": "AMSTEL 1/3 RET", "freq": 6}, {"name": "HEINEKEN 0,0% 1/3 RET", "freq": 4}, {"name": "BIRRA MORETTI 1/3 NR", "freq": 4}, {"name": "CC 1/3 NORMAL RET", "freq": 4}, {"name": "EL AGUILA BR CAJA 24X33CL", "freq": 3}, {"name": "LDV LIMON BR CAJA 24X33CL", "freq": 2}], "Ginebra": [{"name": "GIN SEAGRAM'S 0.70CL", "freq": 10}, {"name": "BEEFEATER 0.70", "freq": 10}, {"name": "GIN LARIOS 0.70", "freq": 8}, {"name": "GINEBRA TANQUERAY 0.70L", "freq": 6}, {"name": "GIN NORDES 0.70", "freq": 4}, {"name": "TANQUERAY 0,0 0.70CL", "freq": 4}, {"name": "LARIOS 12 0.70", "freq": 3}, {"name": "G.BOMBAY SAPPHIRE 0.70", "freq": 3}, {"name": "G.BOMBAY ORIGINAL 0.70", "freq": 2}, {"name": "CIROC APPLE 0.7", "freq": 2}, {"name": "CIROC RED BERRY 0.7", "freq": 2}, {"name": "COOPER DOG WHKY 0.70CL", "freq": 2}, {"name": "ROKU GIN SELECT EDITION 0.70", "freq": 2}], "Whisky / Bourbon": [{"name": "J.WALKER ETIQUETA ROJA 0.70L", "freq": 8}, {"name": "WHISKY J.B. 700", "freq": 6}, {"name": "BALLANTINES 700CC", "freq": 4}, {"name": "WHISKY JAMESON 0.70CL", "freq": 4}, {"name": "J.WALKER ETIQUETA NEGRA 0.70L", "freq": 3}, {"name": "WHISKY DYC 0.70L", "freq": 3}, {"name": "J.W.DOUBLE BLACK", "freq": 2}, {"name": "WHISKY BUSHMILLS 0.70", "freq": 2}, {"name": "CONNEMARA TUBED 0.70", "freq": 2}], "Ron": [{"name": "RON LEGENDARIO ELIXIR DE CUBA 7 AÑOS", "freq": 6}, {"name": "BACARDI C.BLANCA 1L", "freq": 6}, {"name": "RON BRUGAL AÑEJO 0.70", "freq": 6}, {"name": "RON BRUGAL 1888", "freq": 3}, {"name": "CACIQUE 0.70L", "freq": 3}, {"name": "HAVANA 7 0.70", "freq": 3}, {"name": "HAVANA ORIGEN 0.70CL", "freq": 2}, {"name": "ZACAPA CENT 23Y 70CL", "freq": 2}], "Licores y Otros": [{"name": "LC BAILEYS 0.70L", "freq": 8}, {"name": "APEROL 0.70CL", "freq": 6}, {"name": "AMARETO DISARONNO ORIGINALE 0.70", "freq": 4}, {"name": "CREMA RUAVIEJA 0.70", "freq": 4}, {"name": "SHERIDANS 0.70", "freq": 3}, {"name": "PETRONI VERMU ROJO 1L", "freq": 3}, {"name": "L.MANZANA S/A RIVES", "freq": 2}, {"name": "MARTINI ROSSO 100CL", "freq": 2}, {"name": "CINZANO TO SPRITZ 0.75CL", "freq": 2}, {"name": "SALOBREÑA TINTO BENJAMIN 24U", "freq": 2}], "Complementarios": [{"name": "ODK MIX MELON 75CL", "freq": 4}, {"name": "ODK MIX SANDIA 75CL", "freq": 4}]}}, "INBRAEX": {"color": "#22C55E", "cats": {"Purés de Frutas (Monin)": [{"name": "PURE COCO MONIN 1L", "freq": 14}, {"name": "PURE DE PIÑA MONIN 1L", "freq": 8}, {"name": "PURE MANGO MONIN 1L", "freq": 8}, {"name": "PURE FRESA MONIN 1L", "freq": 6}, {"name": "PURE FRUTAS PASION MONIN 1L", "freq": 6}, {"name": "PURE FRUTOS ROJOS MONIN 1L", "freq": 4}, {"name": "PURE FRAMBUESA MONIN 1L", "freq": 4}, {"name": "PURE PLATANO MONIN 1L", "freq": 4}, {"name": "PURE MANZANA VERDE MONIN 1L", "freq": 4}, {"name": "PURE RHUBARB MONIN 1L", "freq": 3}, {"name": "PURE MELOCOTON MONIN 1L", "freq": 2}], "Siropes (Monin)": [{"name": "SIROPE RON CARIBEAN MONIN 0.70L", "freq": 10}, {"name": "SIROPE MANGO SPICY MONIN 0.70L", "freq": 4}, {"name": "SIROPE SPICY MONIN 0.70L", "freq": 3}, {"name": "SIROPE GINGER MONIN 0.70L", "freq": 3}, {"name": "SIROPE DE ALMENDRA MONIN 0.70L", "freq": 2}, {"name": "SIROPE POMELO ROSA MONIN 0.70L", "freq": 2}], "Licores (Monin)": [{"name": "LICOR COCO MONIN 0.70L", "freq": 6}, {"name": "LICOR MELOCOTON MONIN 0.70L", "freq": 6}, {"name": "LICOR PLATANO MONIN 0.70L", "freq": 4}, {"name": "LICOR BLUE CURACAO MONIN 0.70L", "freq": 3}, {"name": "LICOR DE BELLOTA SABORES EXTREMEÑOS 0.70L", "freq": 3}, {"name": "LICOR BELLOTA S/A 0.70L", "freq": 2}], "Otros": [{"name": "CREMA CHOCOLATE BLANCO MONIN 0.50L", "freq": 3}, {"name": "MEZCAL ARTESANAL ENCANTADO 0.70L", "freq": 2}, {"name": "PISCO BARSOL SELECTO ACHOLADO", "freq": 2}, {"name": "RON MATUSALEM 7 AÑOS 0.70L", "freq": 2}]}}, "SCHWEPPES": {"color": "#EAB308", "cats": {"Tónicas y Aguas": [{"name": "SCH TONICA RET 28X1X200ML", "freq": 16}, {"name": "SCH TONIC ZERO 20CL RET 28U", "freq": 6}, {"name": "SCH SEL TONICA GNR 24X1X20CL", "freq": 4}, {"name": "SCH SODA 200RE 28U", "freq": 3}, {"name": "SCH GINGER LOW CAL RET 200 28U", "freq": 3}, {"name": "SCH WILD BERRY RET 28X1X20CL", "freq": 3}, {"name": "SCH SEL LIMON GNR 12X1X20CL", "freq": 3}, {"name": "SCH SEL POMELO GNR 12X1X20CL", "freq": 2}], "Refrescos": [{"name": "SEVEN UP FREE RET 200", "freq": 10}, {"name": "BITTER KAS NO RET 200 BAND", "freq": 4}, {"name": "TRS NARANJA LOW CAL RET 24X1X2", "freq": 3}, {"name": "TRS LIMON LOW CAL RET 24X1X275", "freq": 3}], "Zumos Vida Batuka": [{"name": "VIDA NARANJA BATU 200SR 24U", "freq": 4}, {"name": "VIDA PINA BATUKA 200SR 24U", "freq": 4}, {"name": "VIDA MELOCOTON BA 200SR 24U", "freq": 3}, {"name": "VIDA TOMATE BATUKA 200SR 24U", "freq": 3}], "Nestea / Té Frío": [{"name": "NESTEA LIMON 1/3 CRISTAL X24", "freq": 8}, {"name": "NESTEA TE VERDE MARACUYA 1/3 CRISTAL X24", "freq": 6}, {"name": "NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X24", "freq": 3}, {"name": "RBLISS LEM MIXER VR20 C24", "freq": 3}, {"name": "RBLISS NAR VR20 C24", "freq": 2}, {"name": "RBLISS SIG TON WTR VR20 C24", "freq": 2}]}}, "COCA COLA": {"color": "#EF4444", "cats": {"Coca Cola": [{"name": "COCACOLA VR237 C24", "freq": 16}, {"name": "COCACOLA ZER VR237 C24", "freq": 8}, {"name": "COCACOLA ZER ZER VR237 C24", "freq": 4}, {"name": "COCACOLA LIG VR237 C24", "freq": 3}], "Otras": [{"name": "FANTA NAR VR237 C24", "freq": 6}, {"name": "FANTA LIM VR237 C24", "freq": 5}, {"name": "SPRITE VR20 C24", "freq": 3}, {"name": "AQUARIUS LIMON", "freq": 3}, {"name": "AQUARIUS NARANJA", "freq": 3}, {"name": "LIMONADA MINUTE MAID L&N", "freq": 3}], "Royal Bliss": [{"name": "ROYAL BLISS NARANJA 20CL C24", "freq": 4}, {"name": "ROYAL BLISS LIMON 20CL C24", "freq": 4}, {"name": "ROYAL BLISS YUZU 20CL C24", "freq": 3}], "Agua": [{"name": "AQUABONA AGUA 50CL", "freq": 5}], "Monster Energy": [{"name": "MONSTER ENERGY 250ML", "freq": 5}, {"name": "MONSTER ENERGY 500ML", "freq": 4}, {"name": "MONSTER ENERGY ZERO ULTRA SUGAR FREE 250ML", "freq": 3}, {"name": "MONSTER ENERGY ZERO ULTRA SUGAR FREE 500ML", "freq": 3}, {"name": "MONSTER MANGO LOCO 250ML", "freq": 4}, {"name": "MONSTER MANGO LOCO 500ML", "freq": 3}]}}, "BIERWINKEL": {"color": "#8B5CF6", "cats": {"Cervezas Especiales": [{"name": "GULDEN DRAAK FIRE 33CL", "freq": 8}, {"name": "GULDEN DRAAK 33CL", "freq": 8}, {"name": "DELIRIUM TREMENS 33CL", "freq": 6}, {"name": "DELIRIUM RED 33CL", "freq": 6}, {"name": "CHIMAY AZUL 33CL", "freq": 6}, {"name": "GULDEN DRAAK IMPERIAL STOUT 33CL", "freq": 6}, {"name": "HOUBLON CHOUFFE IPA 33CL", "freq": 5}, {"name": "CHIMAY 150 33CL", "freq": 5}, {"name": "LA CHOUFFE 33CL", "freq": 4}, {"name": "CHIMAY BLANCA TRIPLE 33CL", "freq": 4}, {"name": "GULDEN DRAAK SMOKED 33CL", "freq": 4}, {"name": "KASTEEL TRIPLE 33CL", "freq": 3}, {"name": "DUVEL 33CL", "freq": 3}, {"name": "SAINT BERNARDUS ABT SIXTUS 10 33CL", "freq": 2}, {"name": "GUINNESS 8 33CL", "freq": 2}, {"name": "CHIMAY ROJA 33CL", "freq": 2}], "Sidras Magners": [{"name": "MAGNERS SIDRA MANZANA 56.8CL", "freq": 6}, {"name": "MAGNERS SIDRA BERRY 56.8CL", "freq": 5}, {"name": "MAGNERS SIDRA PEAR 56.8CL", "freq": 4}]}}, "CAFENTO": {"color": "#6B7280", "cats": {"Café": [{"name": "STRAC PROF RED E/96 (Café Rojo)", "freq": 14}, {"name": "STRAC PROF DES E/96 (Café Descafeinado)", "freq": 10}], "Chocolates Calientes": [{"name": "MONT N7 CHOC LECHE", "freq": 8}, {"name": "MONT N1 CHOC NEGRO", "freq": 6}, {"name": "MONT N17 CHOC BLANCO", "freq": 4}, {"name": "MONT N8 CHOC NEGR NATA", "freq": 3}], "Infusiones Calientes (Montecelio)": [{"name": "MONT LAT3 NEGRO CANELA", "freq": 6}, {"name": "MONT LATS VERDE MANZANA", "freq": 5}, {"name": "MONT LAT13 ROJO VAINILLA", "freq": 4}, {"name": "MONT LAT18 BLANCO PAPAYA", "freq": 4}, {"name": "MONT LAT21 ROJO CHOCOLATE", "freq": 3}, {"name": "MONT LAT27 LIMON JENGIBRE", "freq": 3}, {"name": "MONT LAT19 ROJO FLORAL", "freq": 3}, {"name": "MONT LAT29 REGALIZ MENTA", "freq": 3}, {"name": "MONT LAT30 MANZANILLA", "freq": 3}, {"name": "MONT LAT31 MENTA", "freq": 3}, {"name": "MONT LAT16 BLANCO LIMA", "freq": 2}, {"name": "MONT MATCHA LATTE", "freq": 2}, {"name": "MONT CURCUMA LATTE", "freq": 2}, {"name": "MONT KOMBUCHA FRUTOS ROJOS", "freq": 2}, {"name": "MONT KOMBUCHA LIMON", "freq": 2}, {"name": "MONT REMOLACHA LATTE", "freq": 1}], "Tés Fríos (Iced Tea Montecelio)": [{"name": "ICED T MONT NEGRO MELOCOTON", "freq": 8}, {"name": "ICED T MONT FRUTAS BOSQUE", "freq": 6}, {"name": "ICED T MONT PIÑA COLADA", "freq": 6}, {"name": "ICED T MONT NEGRO LIMON", "freq": 5}, {"name": "ICED T MONT ROOIBOS MANGO", "freq": 4}, {"name": "ICED T MONT VERDE MOJITO", "freq": 3}, {"name": "ICED T MONT ROOIBOS PERA", "freq": 3}, {"name": "ICED T MONT GUARANA", "freq": 2}], "Complementarios": [{"name": "LECHE CONDENSADA FACIL 840G", "freq": 10}, {"name": "GALLETAS CHOCOLATE C/1.7KG", "freq": 8}, {"name": "GALLETAS SURTIDO FRE/MANZ/NAR", "freq": 3}, {"name": "AZUCAR SOBRES MONT 1250", "freq": 3}, {"name": "COLA-CAO", "freq": 2}, {"name": "SIROPE VAINILLA 1L", "freq": 2}]}}, "BARRERO": {"color": "#EC4899", "cats": {"Licores Especiales": [{"name": "AMARGUINHA 70CL X6", "freq": 8}, {"name": "LIMONCELLO VILLA MASSA 70CL X6", "freq": 5}, {"name": "GIN MARTIN MILLERS 70CL X6", "freq": 4}, {"name": "LICOR BEIRAO 70CL X6", "freq": 5}, {"name": "CACHACA IRACEMA 75CL X12", "freq": 4}, {"name": "EXOTICA GIN 1890 6/70CL", "freq": 4}, {"name": "CREMA CARAMELO AMARGUINHA 70CL X6", "freq": 3}, {"name": "LICOR 43 CHOCOLATE 70CL X6", "freq": 3}, {"name": "CREMA CHOCOLATE AMARGUINHA 70CL X6", "freq": 2}, {"name": "VODKA KHOR PLATINUM 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE CITRUS 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE MARACUYA 70CL X6", "freq": 2}, {"name": "GINEBRA FOXTALE MELON 70CL X6", "freq": 2}, {"name": "NIKKA FROM THE BARREL 500ML", "freq": 2}, {"name": "WHISKY DUCK TALE 70CL X6", "freq": 2}, {"name": "BUSCAVIDAS WHISKY 70CL X6", "freq": 2}], "Vinos y Espumosos": [{"name": "EL LOCO DE FINCA LA COLINA 75CL X12", "freq": 6}, {"name": "BRUT IMPERIAL MOET CHANDON 75CL", "freq": 4}, {"name": "FOLLADOR PROSECCO TREVISO 75CL X6", "freq": 4}, {"name": "RAMON BILBAO CRIANZA 75CL X6", "freq": 4}, {"name": "LA CHALADA BY VINOS SANZ 75CL X12", "freq": 3}], "Refrescos Premium": [{"name": "FEVERTREE INDIAN TONIC 20CL X24", "freq": 6}, {"name": "NESTEA LIMON 1/3 CRISTAL X24", "freq": 6}, {"name": "FEVERTREE RASPBERRY 20CL X24", "freq": 4}, {"name": "NESTEA TE VERDE MARACUYA 1/3 CRISTAL X24", "freq": 4}, {"name": "NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X24", "freq": 3}, {"name": "AGUA C/GAS PEDRAS VID250 X24", "freq": 3}]}}, "DYEXCO": {"color": "#14B8A6", "cats": {"Destilados": [{"name": "JACK DANIEL'S 0.70 C/6", "freq": 6}, {"name": "JACK DANIEL'S TENNESSEE APPLE 0.70 C/6", "freq": 5}, {"name": "GIN HENDRICK'S 0.70 C/6", "freq": 4}, {"name": "RON BARCELO AÑEJO 0.70 C/12", "freq": 4}, {"name": "HENDRICK'S ANOTHER 0.70 C/6", "freq": 3}, {"name": "LARANXA TRIPLE SECO 0.7 C/6", "freq": 3}, {"name": "VERMOUTH YZAGUIRRE BLANCO 1L C/6", "freq": 2}, {"name": "WHISKY BOLD CREW 0.70 C/6", "freq": 2}]}}, "BEBERCIOS FINOS": {"color": "#F59E0B", "cats": {"Destilados Especiales": [{"name": "LIC PASSOA MARACUYÁ", "freq": 4}, {"name": "VOD RUSSIAN STANDART 1894 LITRO", "freq": 3}, {"name": "PISCO BARSOL SELECTO ACHOLADO", "freq": 3}, {"name": "VOD ABSOLUT VAINILLA 0.7", "freq": 2}, {"name": "LIC DRAMBUIE 0.7", "freq": 2}, {"name": "BITTER FEE BROTHERS CHOCOLATE", "freq": 2}]}}, "JUAN HIDALGO": {"color": "#78716C", "cats": {"Snacks y Aperitivos": [{"name": "PATATAS HH BOLSA 500GR", "freq": 10}, {"name": "KONOS FRITOS BOLSAS 798GR", "freq": 8}, {"name": "PICADITA MIEL-MOSTAZA 1KG", "freq": 6}, {"name": "GOMAS FINI MIX PICA SOUR LITTLE", "freq": 4}]}}, "MONTANERA DE LA DEHESA": {"color": "#84CC16", "cats": {"Cervezas y Destilados": [{"name": "EG 1906 33CL RETORNABLE", "freq": 4}, {"name": "1906 REDVINTAGE 33CLX24 RET", "freq": 3}, {"name": "RON AREHUCAS CARTA ORO 70CL", "freq": 3}, {"name": "EG RIVERA REPOSADA BNR 33X24", "freq": 2}, {"name": "FDE FORMENTERA 70CL", "freq": 2}]}}, "SANCHEZ MONTERO": {"color": "#0EA5E9", "cats": {"Cerveza Ambar": [{"name": "AMBAR ESP LN 1/3 RET 24BOT", "freq": 8}, {"name": "AMBAR 000 TOSTADA 1/3 RET 24BOT", "freq": 6}, {"name": "AMBAR RADLER 1/3 RET 24BOT", "freq": 6}, {"name": "AMBAR LA 125 1/3 12B NR", "freq": 4}]}}};
 
+  <dialog id="orderDialog">
+    <div class="summary">
+      <div class="handle"></div>
+      <div class="summary-head"><div><div class="eyebrow">Irish Tavern</div><h2>Resumen del pedido</h2></div><button class="close" id="closeOrder" aria-label="Cerrar">×</button></div>
+      <div class="summary-body" id="summaryBody"></div>
+      <div class="summary-actions">
+        <button class="action danger" id="resetOrder" type="button">BORRAR</button>
+        <button class="action" id="copyOrder" type="button">COPIAR</button>
+        <button class="action primary" id="shareOrder" type="button">COMPARTIR</button>
+      </div>
+    </div>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-const PROVS = Object.keys(DATA);
-let currentProv = PROVS[0];
-let quantities = {};
+  <script>
+  const CATALOG = {"Tardio":{"color":"#3b82f6","categories":{"Cervezas Mahou y especiales":[{"name":"MAHOU 5 ESTRELLAS RET. 24 BOT. 1/3","uses":2},{"name":"STELLA ARTOIS NR 24 × 0,33 L","uses":2},{"name":"MAHOU 0,0 TOSTADA RET. 24 BOT. 1/3","uses":2},{"name":"ALHAMBRA RESERVA 1925 1/3 NR","uses":2},{"name":"LEFFE TRIPLE 24 BOT. 1/3","uses":2},{"name":"CORONA LOOSE 35,5 CL × 24","uses":2},{"name":"FOUNDERS CENTENNIAL IPA 35,5 CL × 24","uses":2},{"name":"BUDWEISER 0,33 × 24","uses":2},{"name":"ALHAMBRA RESERVA ROJA 1/3 NR","uses":2},{"name":"MAESTRA RET. 24 BOT. 1/3","uses":2},{"name":"BRUTUS 1/3 CAJA 12","uses":2},{"name":"FOUNDERS ALL DAY 35,5 CL × 24","uses":2},{"name":"CORONA PACK 4 × 6 BOT. 1/3","uses":2}],"Destilados y energéticas":[{"name":"RON LEGENDARIO ELIXIR 7 AÑOS 70 CL","uses":1},{"name":"RED BULL ENERGY DRINK LATA 250 ML","uses":1}],"Schweppes · Tónicas y mixers":[{"name":"SCHWEPPES TÓNICA RET. 28 × 200 ML","uses":2},{"name":"SCHWEPPES TÓNICA ZERO RET. 28 × 20 CL","uses":2},{"name":"SCHWEPPES SELECTION TÓNICA GINGER 24 × 20 CL","uses":2},{"name":"SCHWEPPES SODA RET. 28 × 200 ML","uses":2},{"name":"SCHWEPPES WILD BERRY RET. 28 × 20 CL","uses":2},{"name":"SCHWEPPES POMELO RET. 28 × 200 ML","uses":2},{"name":"SCHWEPPES GINGER LOW CAL RET. 28 × 200 ML","uses":2},{"name":"SCHWEPPES SELECTION POMELO 12 × 20 CL","uses":2},{"name":"SCHWEPPES SELECTION LIMÓN 12 × 20 CL","uses":2},{"name":"SCHWEPPES SELECTION NARANJA 12 × 20 CL","uses":2},{"name":"SCHWEPPES SELECTION GINGER BEER 12 × 20 CL","uses":2}],"Schweppes · Refrescos":[{"name":"SEVEN UP FREE RET. 24 × 200 ML","uses":2},{"name":"BITTER KAS NO RET. 24 × 200 ML","uses":2},{"name":"LA CASERA LIMÓN 1 L × 12","uses":2},{"name":"LA CASERA GASEOSA 1 L × 12","uses":2},{"name":"LA CASERA TINTO DE VERANO LIMÓN 275 ML × 24","uses":2},{"name":"LA CASERA TINTO DE VERANO LIMÓN RET. 275 ML × 24","uses":2},{"name":"TRINA NARANJA LOW CAL RET. 24 U","uses":2},{"name":"TRINA LIMÓN LOW CAL RET. 24 × 275 ML","uses":2}],"Schweppes · Zumos Vida":[{"name":"VIDA NARANJA BATUKA 200 ML × 24","uses":2},{"name":"VIDA PIÑA BATUKA 200 ML × 24","uses":2},{"name":"VIDA MELOCOTÓN BATUKA 200 ML × 24","uses":2},{"name":"VIDA TOMATE BATUKA 200 ML × 24","uses":2}]}},"Carballo":{"color":"#f97316","categories":{"Barriles":[{"name":"GUINNES 30 LITROS","uses":18},{"name":"PAULANER B/30 L ORGMUCHNER","uses":17},{"name":"MURPHY BARRIL 30 L ROJA","uses":16},{"name":"PAULANER B/30 L HWEISBEER TRIGO","uses":16},{"name":"AFFLIGEM DOUBLE BARRIL 20L SANKEY ES","uses":13},{"name":"GUINNESS HOP HOUSE 13 BARRIL 30L ES","uses":11},{"name":"LAGUNITAS IPA 20 LITROS","uses":11},{"name":"CC GRAN RSVA 20 LITROS","uses":8}],"Cerveza botella":[{"name":"EL AGUILA SIN FILTRAR S/RET","uses":17},{"name":"HEINEKEN 1/3 RET","uses":17},{"name":"18/70 LA RUBIA BR CAJA 24X33CL ES","uses":17},{"name":"CC SIN GLUTEN 1/3 S/R","uses":14},{"name":"EL ALCAZAR 1/3 S/R C12","uses":13},{"name":"LADRON DE MANZANAS 1/3 RET","uses":13},{"name":"AMSTEL 1/3 RET","uses":13},{"name":"JUDAS 1/3 12 NR","uses":13},{"name":"CRUZCAMPO RADLER RET. 1/3","uses":13},{"name":"CC 1/3 NORMAL RET","uses":12},{"name":"DESPERADOS BR CAJA 24X33CL ES","uses":11},{"name":"AMSTEL ORO 0,0 1/3 RET TOSTADA","uses":11},{"name":"HEINEKEN 0,0% 1/3 RET","uses":10},{"name":"MORT SUBITE KRIEK LMABIC","uses":9},{"name":"EL AGUILA BR CAJA 24X33CL ES 2025","uses":9},{"name":"BIRRA MORETTI 1/3 NR","uses":5},{"name":"LDV LIMON BR CAJA 24X33CL ES","uses":2}],"Ginebra":[{"name":"GIN SEAGRAM'S 0.70CL","uses":13},{"name":"BEFFEATER 0.70","uses":10},{"name":"G.BOMBAY SAPPHIRE 0.70","uses":5},{"name":"GINEBRA TANQUERAY 0.70 L","uses":5},{"name":"GIN LARIOS 0.70","uses":5},{"name":"GIN NORDES 0.70","uses":4},{"name":"LARIOS 12 0.70","uses":3},{"name":"TANQUERAY 0,0 0.70CL","uses":3},{"name":"G.BOMBAY ORIGINAL 0.70","uses":2},{"name":"GIN GVINE FLORAISON 0.70","uses":2},{"name":"BEFFEATER 0,0 0.70","uses":2},{"name":"BEEFEATER BLACK 0.70","uses":2},{"name":"ROKU GIN SELECT EDITION 0.70","uses":2},{"name":"GIN MONKEY 47 0.5","uses":2},{"name":"BEEFEATER LIGHT 0.70","uses":1},{"name":"MALFY LIMONE 0.70CL","uses":1},{"name":"GIN BROCKSMANS 0.70","uses":1},{"name":"GINEBRA GORDONS 0,70L","uses":1},{"name":"AMPERSAND PINK 0.7","uses":1}],"Whisky y bourbon":[{"name":"J.WALKER E.RJ. 0,70L","uses":13},{"name":"WHISKY JAMESON 0.70 CL","uses":8},{"name":"WHISKY J.B. 700","uses":7},{"name":"BALLANTINES 700 CC","uses":6},{"name":"J.WALKER E.NEGRA 0.70 L","uses":5},{"name":"WHISKY DYC 0.70L","uses":4},{"name":"WHISKY BUSHMILLS 0.70","uses":4},{"name":"BALLANTINES 10A 0.70","uses":3},{"name":"W.WHITE LABEL 0.70","uses":3},{"name":"CHIVAS REGAL 18","uses":3},{"name":"BALLANTINES LIGHT 0.70","uses":2},{"name":"J.W.DOUBLE BLACK","uses":2},{"name":"WHISKY CUTTY SARK 0.70","uses":2},{"name":"DYC SINGLE MALT 10YO 0.70CL","uses":2},{"name":"COOPER DOG WHKY 0.70CL","uses":2},{"name":"CONNEMARA TUBED 0.70","uses":1},{"name":"WHISKY BLACK BUSH 0.70","uses":1},{"name":"WHISKY CARDHU 0,70","uses":1},{"name":"DYC SINGLE MALT 15YO 0.70CL","uses":1},{"name":"WHISKY 100 PIPERS","uses":1},{"name":"WHISKY DYC 8 AÑOS 0.70","uses":1},{"name":"FOUR ROSES 70CL","uses":1},{"name":"BOURBON JIM BEAM 0.70","uses":1}],"Ron":[{"name":"BACARDI C.BLANCA 1L","uses":6},{"name":"RON LEGENDARIO ELIXIR DE CUBA 7 AÑOS","uses":6},{"name":"STA TERESA G.RESERVA 0.70","uses":4},{"name":"RON BRUGAL AÑEJO 0.70","uses":3},{"name":"RON BRUGAL 1888","uses":3},{"name":"CACIQUE 0.70 L","uses":3},{"name":"ZACAPA CENT 23Y 70CL","uses":2},{"name":"HAVANA ORIGEN 0,70 CL","uses":2},{"name":"HAVANA 7 0.70","uses":1},{"name":"CACIQUE 500 0.70 L","uses":1},{"name":"BUMBU ORIGINAL 0.70CL","uses":1},{"name":"FLOR DE CAÑA G.RSVA 0.7","uses":1},{"name":"BACARDI SPICED 0.70 CL","uses":1}],"Vodka":[{"name":"CIROC APPLE 0.7","uses":7},{"name":"CIROC RED BERRY 0.7","uses":2},{"name":"VODKA CARAMELO RIVES","uses":2},{"name":"VODKA ABSOLUT 0.70","uses":2},{"name":"GREY GOOSE ORIGINAL 0.70","uses":1},{"name":"CIROC COCONUT","uses":1}],"Tequila":[{"name":"OLMECA REPOSADO 0.70","uses":2},{"name":"TEQUILA CUERVO ESPECIAL 0.70","uses":2},{"name":"TEQUILA 1800 CRISTALINO","uses":2},{"name":"TEQUILA RESERVA 1800 SILVER 0,70","uses":2},{"name":"TEQUILA RESERVA 1800 AÑEJO 0,70","uses":1},{"name":"TEQUILA RESERVA 1800 REPOSADO 0,70","uses":1}],"Vermut y aperitivos":[{"name":"APEROL 0.70 CL","uses":4},{"name":"MARTINI S/A VIBRANTE 0.70","uses":2},{"name":"CINZANO TO SPRITZ 0.75CL","uses":2},{"name":"PETRONI VERMU ROJO 1L","uses":1},{"name":"MARTINI ROSSO 100CL","uses":1},{"name":"APEROL 1L","uses":1},{"name":"MARTINI S/A FLOREALE 0.70","uses":1}],"Licores y otros":[{"name":"ARABE AZUL SANI 0.70","uses":22},{"name":"LC BAILEYS 0,70L","uses":14},{"name":"SALOBREÑA TINTO BENJAMIN 24U","uses":10},{"name":"L.MANZANA S/A RIVES","uses":8},{"name":"AMARETO DISARONNO ORIGINALE 0.70","uses":4},{"name":"CREMA RUAVIEJA 0.70","uses":4},{"name":"L.MORA S/A 0.70","uses":4},{"name":"LC.HIERBAS RUAVIEJA 0.70","uses":2},{"name":"JAGERMEISTER","uses":2},{"name":"KAHLUA 0.70CL","uses":2},{"name":"PUERTO DE INDIAS FRESA 0.70","uses":2},{"name":"MARIA BRIZARD","uses":1},{"name":"CARLOS I BRANDY JEREZ","uses":1},{"name":"SHERIDANS 0.70","uses":1},{"name":"PUERTO DE INDIAS EXOTICA 0.70","uses":1},{"name":"LICOR FRANGELICO 0.70CL","uses":1}]}},"Inbraex":{"color":"#22c55e","categories":{"Purés Monin":[{"name":"PURÉ COCO MONIN 1 L","uses":2},{"name":"PURÉ PIÑA MONIN 1 L","uses":2},{"name":"PURÉ FRUTAS DE LA PASIÓN MONIN 1 L","uses":2},{"name":"PURÉ MANGO MONIN 1 L","uses":2},{"name":"PURÉ FRESA MONIN 1 L","uses":2},{"name":"PURÉ FRUTOS ROJOS MONIN 1 L","uses":2},{"name":"PURÉ PLÁTANO MONIN 1 L","uses":2},{"name":"PURÉ MANZANA VERDE MONIN 1 L","uses":2},{"name":"PURÉ FRAMBUESA MONIN 1 L","uses":2},{"name":"PURÉ RHUBARB MONIN 1 L","uses":2}],"Siropes Monin":[{"name":"SIROPE RON CARIBBEAN MONIN 70 CL","uses":1},{"name":"SIROPE ALMENDRA MONIN 70 CL","uses":1},{"name":"SIROPE SPICY MONIN 70 CL","uses":1},{"name":"SIROPE GINGER (JENGIBRE) MONIN 70 CL","uses":1},{"name":"SIROPE MANGO SPICY MONIN 70 CL","uses":1},{"name":"SIROPE POMELO ROSA MONIN 70 CL","uses":1}],"Licores":[{"name":"LICOR BELLOTA S/A SABORES EXTREMEÑOS 70 CL","uses":1},{"name":"LICOR DE BELLOTA SABORES EXTREMEÑOS 70 CL","uses":1},{"name":"LICOR COCO MONIN 70 CL","uses":1},{"name":"LICOR MELOCOTÓN MONIN 70 CL","uses":1},{"name":"LICOR PLÁTANO MONIN 70 CL","uses":1},{"name":"LICOR BLUE CURAÇAO MONIN 70 CL","uses":1}],"Otros":[{"name":"MEZCAL ARTESANAL ENCANTADO 70 CL","uses":1},{"name":"RON MATUSALEM 7 AÑOS 70 CL","uses":1},{"name":"CREMA CHOCOLATE BLANCO MONIN 50 CL","uses":1}]}},"Bierwinkel":{"color":"#8b5cf6","categories":{"Cervezas belgas y especiales":[{"name":"CHIMAY 150 33 CL","uses":3},{"name":"CHIMAY AZUL 33 CL","uses":3},{"name":"CHIMAY ROJA 33 CL","uses":3},{"name":"CHIMAY BLANCA TRIPLE 33 CL","uses":3},{"name":"DELIRIUM RED 33 CL","uses":3},{"name":"DELIRIUM TREMENS 33 CL","uses":3},{"name":"DUVEL 33 CL","uses":3},{"name":"GULDEN DRAAK 33 CL","uses":3},{"name":"GULDEN DRAAK FIRE 33 CL","uses":3},{"name":"GULDEN DRAAK IMPERIAL STOUT 33 CL","uses":3},{"name":"HOUBLON CHOUFFE IPA 33 CL","uses":3},{"name":"KASTEEL TRIPLE 33 CL","uses":3},{"name":"LA CHOUFFE 33 CL","uses":3}],"Sidras Magners":[{"name":"MAGNERS SIDRA BERRY 56,8 CL","uses":3},{"name":"MAGNERS SIDRA MANZANA 56,8 CL","uses":3},{"name":"MAGNERS SIDRA PEAR 56,8 CL","uses":3}]}},"Cafento":{"color":"#64748b","categories":{"Café":[{"name":"STRAC PROF RED E/96 (CAFÉ ROJO)","uses":10},{"name":"STRAC PROF DES E/96 (DESCAFEINADO)","uses":10}],"Chocolate caliente":[{"name":"MONT N1 CHOCOLATE NEGRO","uses":2},{"name":"MONT N5 CHOCOLATE NEGRO NATA","uses":2},{"name":"MONT N7 CHOCOLATE LECHE","uses":2},{"name":"MONT N17 CHOCOLATE BLANCO","uses":2}],"Infusiones Montecelio":[{"name":"MONT LAT3 NEGRO CANELA","uses":1},{"name":"MONT LAT8 VERDE MANZANA","uses":1},{"name":"MONT LAT13 ROJO VAINILLA","uses":1},{"name":"MONT LAT16 BLANCO LIMA","uses":1},{"name":"MONT LAT18 BLANCO PAPAYA","uses":1},{"name":"MONT LAT19 ROJO FLORAL","uses":1},{"name":"MONT LAT21 ROJO CHOCOLATE","uses":1},{"name":"MONT LAT23 ROJO MANZANA","uses":1},{"name":"MONT LAT27 LIMÓN JENGIBRE","uses":1},{"name":"MONT LAT29 REGALIZ MENTA","uses":1},{"name":"MONT LAT30 MANZANILLA","uses":1},{"name":"MONT LAT31 MENTA","uses":1},{"name":"MONT MATCHA LATTE","uses":1},{"name":"MONT CÚRCUMA LATTE","uses":1},{"name":"MONT REMOLACHA LATTE","uses":1}],"Tés fríos y kombucha":[{"name":"ICED TEA MONT NEGRO LIMÓN","uses":2},{"name":"ICED TEA MONT NEGRO MELOCOTÓN","uses":2},{"name":"ICED TEA MONT FRUTAS DEL BOSQUE","uses":2},{"name":"ICED TEA MONT PIÑA COLADA","uses":2},{"name":"ICED TEA MONT ROOIBOS MANGO","uses":2},{"name":"ICED TEA MONT VERDE MOJITO","uses":2},{"name":"ICED TEA MONT GUARANÁ","uses":2},{"name":"MONTECELIO ICED TEA","uses":2},{"name":"MONT KOMBUCHA FRUTOS ROJOS","uses":2},{"name":"MONT KOMBUCHA LIMÓN","uses":2}],"Complementarios":[{"name":"LECHE CONDENSADA FÁCIL 840 G","uses":2},{"name":"GALLETAS CHOCOLATE 1,7 KG","uses":2},{"name":"GALLETAS SURTIDO FRESA/MANZANA/NARANJA","uses":2},{"name":"AZÚCAR SOBRES MONT 1250","uses":2},{"name":"COLA-CAO 50 SOBRES","uses":2},{"name":"SIROPE VAINILLA 1 L","uses":2},{"name":"EDULCORANTE ASPARTAM EDU 250","uses":2}]}},"Barrero":{"color":"#ec4899","categories":{"Destilados y licores":[{"name":"AMARGUINHA 70CL X 6","uses":24},{"name":"VODKA KHOR PLATINUM 70CL X 6","uses":8},{"name":"LIMONCELLO VILLA MASSA 70CL X 6","uses":6},{"name":"LICOR BEIRAO 70CL X 6","uses":6},{"name":"GIN MARTIN MILLERS 70CL X 6","uses":4},{"name":"EXOTICA GIN 1890 6/70CL","uses":4},{"name":"CACHAÇA IRACEMA 75CL X 12","uses":4},{"name":"GINEBRA FOXTALE MARACUYA 70CL X 6","uses":3},{"name":"CREMA CARAMELO AMARGUINHA 70CL X 6","uses":2},{"name":"LICOR 43 CHOCOLATE 70CL X 6","uses":2},{"name":"GINEBRA FOXTALE CITRUS 70CL X 6","uses":1},{"name":"GINEBRA FOXTALE MELON 70CL X 6","uses":1},{"name":"CREMA CHOCOLATE AMARGUINHA 70CL X 6","uses":1},{"name":"NIKKA FROM THE BARREL 500ML","uses":1},{"name":"WHISKY DUCK TALE 70CL X 6","uses":1},{"name":"BUSCAVIDAS WHISKY 70CL X 6","uses":1}],"Vinos y espumosos":[{"name":"FOLLADOR PROSECCO TREVISO 75CL X 6","uses":10},{"name":"EL LOCO DE FINCA LA COLINA 75CL X 12","uses":5},{"name":"RAMON BILBAO CRIANZA 75CL X 6","uses":4},{"name":"LA CHALADA BY VINOS SANZ 75CL X 12","uses":2},{"name":"BRUT IMPERIAL MOET CHANDON 75CL","uses":2}],"Refrescos premium":[{"name":"NESTEA TE VERDE MARACUYA 1/3 CRISTAL X 24","uses":22},{"name":"NESTEA LIMON 1/3 CRISTAL X 24","uses":17},{"name":"AGUA C/ GAS PEDRAS VID250 X 24","uses":11},{"name":"FEVERTREE RASPBERRY 20CL X 24","uses":10},{"name":"FEVERTREE INDIAN TONIC","uses":3},{"name":"NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X 24","uses":2}],"Utensilios":[{"name":"(CO6799GB) COPA GRAN BARMAN GIONA 620 ML","uses":1}]}},"Dyexco":{"color":"#14b8a6","categories":{"Whisky":[{"name":"JACK DANIEL'S 70 CL","uses":2},{"name":"JACK DANIEL'S TENNESSEE APPLE 70 CL","uses":2},{"name":"JACK DANIEL'S TENNESSEE FIRE 70 CL","uses":2},{"name":"JACK DANIEL'S SINGLE BARREL 70 CL","uses":2},{"name":"GENTLEMAN JACK 70 CL","uses":2},{"name":"WHISKY BOLD CREW 70 CL","uses":2},{"name":"WHISKY BUFFALO TRACE 70 CL","uses":2}],"Ron":[{"name":"RON BARCELÓ AÑEJO 70 CL","uses":2},{"name":"RON BARCELÓ IMPERIAL","uses":2},{"name":"BARCELÓ CREAM 3/4","uses":2}],"Ginebra":[{"name":"GIN HENDRICK'S 70 CL","uses":1},{"name":"MACARONESIA WHITE GIN 70 CL","uses":1},{"name":"GINEBRA BULLDOG 70 CL","uses":1}],"Vermut y aperitivos":[{"name":"VERMOUTH YZAGUIRRE ROJO 1 L","uses":1},{"name":"VERMOUTH YZAGUIRRE BLANCO 1 L","uses":1},{"name":"APEROL 70 CL","uses":1},{"name":"CINZANO PRO SPRITZ 70 CL","uses":1},{"name":"LARANXA TRIPLE SECO 70 CL","uses":1}]}},"Coca-Cola":{"color":"#ef4444","categories":{"Coca-Cola":[{"name":"COCA-COLA VR 237 ML × 24","uses":3},{"name":"COCA-COLA ZERO VR 237 ML × 24","uses":3},{"name":"COCA-COLA ZERO ZERO VR 237 ML × 24","uses":3},{"name":"COCA-COLA LIGHT VR 237 ML × 24","uses":3}],"Refrescos y zumos":[{"name":"FANTA NARANJA VR 237 ML × 24","uses":2},{"name":"FANTA LIMÓN VR 237 ML × 24","uses":2},{"name":"SPRITE VR 200 ML × 24","uses":2},{"name":"AQUARIUS VR 300 ML × 24","uses":2},{"name":"AQUARIUS NARANJA VR 300 ML × 24","uses":2},{"name":"MINUTE MAID LIMÓN & NARANJA 200 ML × 24","uses":2}],"Agua y mixers":[{"name":"AQUABONA PET 350 ML × 24","uses":2},{"name":"ROYAL BLISS SIGNATURE TONIC 200 ML × 24","uses":2},{"name":"ROYAL BLISS NARANJA 200 ML × 24","uses":2},{"name":"ROYAL BLISS LEMON MIXER 200 ML × 24","uses":2}],"Monster Energy":[{"name":"MONSTER ENERGY 250 ML × 24","uses":2},{"name":"MONSTER MANGO LOCO 250 ML × 24","uses":2}]}},"Juan Hidalgo e Hijos":{"color":"#a16207","categories":{"Aperitivos":[{"name":"PICADITA MIEL-MOSTAZA 1 KG","uses":15},{"name":"PATATAS HH BOLSA 500 G","uses":15},{"name":"KONOS FRITOS LENG-D'OR BOLSA 790 G","uses":15}],"Golosinas":[{"name":"GOMAS FINI MIX PICA SOUR LITTLE MIX 1 KG","uses":2},{"name":"CONGUITOS BLANCOS GRANEL 1 KG","uses":2},{"name":"CONGUITOS ORIGINAL CHOCOLATE GRANEL 1 KG","uses":2}]}},"Sánchez Montero":{"color":"#0ea5e9","categories":{"Cerveza Ámbar":[{"name":"ÁMBAR 0,0 TOSTADA 1/3 RET. 24 BOT.","uses":4},{"name":"ÁMBAR LA 125 1/3 12 BOT. NR","uses":4},{"name":"ÁMBAR RADLER 1/3 RET. 24 BOT.","uses":4},{"name":"ÁMBAR ESPECIAL LN 1/3 RET. 24 BOT.","uses":4}]}}};
+  const STORAGE_KEY = 'irish-tavern-pedidos-v4';
+  const suppliers = Object.keys(CATALOG);
+  let currentSupplier = suppliers[0];
+  let searchAll = false;
+  let onlySelected = false;
+  let state = loadState();
 
-function key(prov, name){ return prov+'||'+name; }
-function getQty(prov, name){ return quantities[key(prov,name)]||0; }
-function setQty(prov, name, val){
-  val = Math.max(0,parseInt(val)||0);
-  if(val===0) delete quantities[key(prov,name)];
-  else quantities[key(prov,name)]=val;
-  updateNav(); updateSummaryBadge();
-}
-function getWeekNumber(){ const d=new Date(),o=new Date(d.getFullYear(),0,1); return Math.ceil((((d-o)/86400000)+o.getDay()+1)/7); }
-function isMonday(){ return new Date().getDay()===1; }
+  const $ = selector => document.querySelector(selector);
+  const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const escapeHTML = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const productId = (supplier,name) => encodeURIComponent(`${supplier}|${name}`);
 
-function buildNav(){
-  const nav=document.getElementById('bottomnav');
-  nav.innerHTML=PROVS.map(p=>`<button class="nav-btn${p===currentProv?' active':''}" data-prov="${p}" onclick="switchProv('${p}')" style="--nav-color:${DATA[p].color}"><div class="nav-icon"></div><div class="nav-label">${p.length>8?p.substring(0,8)+'…':p}</div><div class="nav-dot"></div></button>`).join('');
-}
+  function loadState(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if(saved && saved.quantities && saved.custom) return saved;
+    }catch(e){}
+    return {quantities:{},custom:{},updatedAt:null};
+  }
+  function saveState(){ state.updatedAt=new Date().toISOString(); localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
+  function qty(supplier,name){ return Number(state.quantities[productId(supplier,name)]||0); }
+  function setQty(supplier,name,value){
+    const id=productId(supplier,name), clean=Math.max(0,Math.min(999,Number.parseInt(value,10)||0));
+    if(clean) state.quantities[id]=clean; else delete state.quantities[id];
+    saveState(); render();
+  }
+  function allProducts(supplier){
+    const base=[];
+    Object.entries(CATALOG[supplier].categories).forEach(([category,products])=>products.forEach(p=>base.push({...p,category,custom:false})));
+    (state.custom[supplier]||[]).forEach(name=>base.push({name,uses:0,category:'Añadidos manualmente',custom:true}));
+    return base;
+  }
+  function stats(){
+    let lines=0,units=0;
+    suppliers.forEach(s=>allProducts(s).forEach(p=>{const q=qty(s,p.name);if(q){lines++;units+=q;}}));
+    return {lines,units};
+  }
+  function isoWeek(){
+    const date=new Date(), target=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+    const day=target.getUTCDay()||7; target.setUTCDate(target.getUTCDate()+4-day);
+    const start=new Date(Date.UTC(target.getUTCFullYear(),0,1));
+    return Math.ceil((((target-start)/86400000)+1)/7);
+  }
 
-function switchProv(prov){
-  currentProv=prov;
-  document.getElementById('prov-label').textContent=prov;
-  document.getElementById('prov-label').style.color=DATA[prov].color;
-  document.documentElement.style.setProperty('--active-color',DATA[prov].color);
-  document.documentElement.style.setProperty('--active-dim',hexToRgba(DATA[prov].color,0.12));
-  document.getElementById('search').value='';
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.prov===prov));
-  renderList();
-  document.getElementById('scroll-area').scrollTop=0;
-}
-
-function hexToRgba(hex,a){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-function renderList(filter){
-  const q=(filter||document.getElementById('search').value||'').toLowerCase().trim();
-  const prov=DATA[currentProv];
-  const color=DATA[currentProv].color;
-  let html='';
-  Object.entries(prov.cats).forEach(([cat,items])=>{
-    const filtered=q?items.filter(p=>p.name.toLowerCase().includes(q)):items;
-    if(!filtered.length) return;
-    const withQty=filtered.filter(p=>getQty(currentProv,p.name)>0);
-    html+=`<div class="cat-header"><div class="cat-label">${cat}</div><div class="cat-line"></div>${withQty.length?`<div class="cat-count">${withQty.length}</div>`:''}</div>`;
-    filtered.forEach(p=>{
-      const qty=getQty(currentProv,p.name);
-      const hasQty=qty>0;
-      const esc=p.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-      html+=`<div class="prod-row ${hasQty?'has-qty':''}">
-        <div class="prod-info">
-          <div class="prod-name">${p.name}</div>
-          <div class="prod-freq">${p.freq} pedidos</div>
-        </div>
-        <div class="qty-controls">
-          <button class="qty-btn" onclick="adj('${currentProv}','${esc}',-1)">−</button>
-          <div class="qty-sep"></div>
-          <input class="qty-val ${hasQty?'active':''}" type="number" min="0" value="${qty||''}" placeholder="0"
-            onchange="setQtyR('${currentProv}','${esc}',this.value)"
-            onfocus="this.select()">
-          <div class="qty-sep"></div>
-          <button class="qty-btn" onclick="adj('${currentProv}','${esc}',1)">+</button>
-        </div>
-      </div>`;
+  function renderNav(){
+    $('#supplierNav').innerHTML=suppliers.map(s=>{
+      const has=allProducts(s).some(p=>qty(s,p.name));
+      return `<button type="button" class="supplier-tab ${s===currentSupplier?'active':''} ${has?'has-items':''}" style="--supplier:${CATALOG[s].color}" data-supplier="${escapeHTML(s)}">${escapeHTML(s)}</button>`;
+    }).join('');
+  }
+  function groupedMatches(supplier,query){
+    const groups=new Map();
+    allProducts(supplier).forEach(product=>{
+      if(query && !normalize(product.name).includes(query)) return;
+      if(onlySelected && !qty(supplier,product.name)) return;
+      if(!groups.has(product.category)) groups.set(product.category,[]);
+      groups.get(product.category).push(product);
     });
+    return groups;
+  }
+  function renderProduct(supplier,product){
+    const q=qty(supplier,product.name), id=productId(supplier,product.name);
+    return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}">
+      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.custom?'Añadido manualmente':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}${product.custom?' · toca para eliminar':''}</div></div>
+      <div class="controls"><button class="qty-btn minus" type="button" aria-label="Quitar ${escapeHTML(product.name)}">−</button><input class="qty" id="q-${id}" inputmode="numeric" type="number" min="0" max="999" value="${q||''}" placeholder="0" aria-label="Cantidad de ${escapeHTML(product.name)}"><button class="qty-btn plus" type="button" aria-label="Añadir ${escapeHTML(product.name)}">+</button></div>
+    </div>`;
+  }
+  function renderSupplier(supplier,query,global=false){
+    const groups=groupedMatches(supplier,query);
+    if(!groups.size) return '';
+    const total=allProducts(supplier).length;
+    let html=global?`<div class="global-label" style="--supplier:${CATALOG[supplier].color}">${escapeHTML(supplier)}</div>`:'';
+    groups.forEach((products,category)=>{
+      html+=`<section class="category" style="--brand:${CATALOG[supplier].color};--brand-soft:${CATALOG[supplier].color}20"><div class="category-title"><h2>${escapeHTML(category)}</h2><span class="category-count">${products.length}</span></div>${products.map(p=>renderProduct(supplier,p)).join('')}</section>`;
+    });
+    return html;
+  }
+  function renderCatalog(){
+    const raw=$('#search').value.trim(), query=normalize(raw), color=CATALOG[currentSupplier].color;
+    document.documentElement.style.setProperty('--brand',color);
+    document.documentElement.style.setProperty('--brand-soft',`${color}20`);
+    let content='';
+    if(searchAll && query){
+      content=suppliers.map(s=>renderSupplier(s,query,true)).join('');
+      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name">Resultados</h2><div class="supplier-meta">Buscando en los ${suppliers.length} proveedores</div></div></div>${content||emptyHTML('No hay coincidencias','Prueba con otra palabra.')}`;
+    }else{
+      const total=allProducts(currentSupplier).length, selected=allProducts(currentSupplier).filter(p=>qty(currentSupplier,p.name)).length;
+      content=renderSupplier(currentSupplier,query,false);
+      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name" style="color:${color}">${escapeHTML(currentSupplier)}</h2><div class="supplier-meta">${total} productos · ${selected} seleccionados</div></div><button class="only-selected ${onlySelected?'active':''}" id="onlySelected" type="button">Solo pedido</button></div>${content||emptyHTML(onlySelected?'No hay productos seleccionados':'No hay coincidencias',onlySelected?'Añade cantidades para verlas aquí.':'Prueba con otra palabra.')}<div class="custom-actions"><button class="ghost-btn" id="addCustom" type="button">＋ Añadir producto manual</button></div>`;
+    }
+  }
+  function emptyHTML(title,detail){ return `<div class="empty"><strong>${escapeHTML(title)}</strong>${escapeHTML(detail)}</div>`; }
+  function renderOrderBar(){
+    const {lines,units}=stats();
+    $('#orderCount').textContent=lines?`${lines} producto${lines===1?'':'s'} · ${units} unidad${units===1?'':'es'}`:'Pedido vacío';
+    $('#orderDetail').textContent=state.updatedAt&&lines?`Guardado ${new Date(state.updatedAt).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:'Los cambios se guardan en este teléfono';
+  }
+  function render(){ renderNav(); renderCatalog(); renderOrderBar(); $('#clearSearch').classList.toggle('show',!!$('#search').value); }
+
+  function selectedBySupplier(){
+    return suppliers.map(s=>({supplier:s,items:allProducts(s).map(p=>({name:p.name,qty:qty(s,p.name)})).filter(p=>p.qty)})).filter(g=>g.items.length);
+  }
+  function orderText(onlySupplier=null){
+    const groups=selectedBySupplier().filter(group=>!onlySupplier||group.supplier===onlySupplier);
+    if(!groups.length) return '';
+    const lines=[`PEDIDO SEMANA ${isoWeek()} · THE IRISH TAVERN`,''];
+    groups.forEach(group=>{lines.push(group.supplier.toUpperCase());group.items.forEach(item=>lines.push(`• ${item.qty} × ${item.name}`));lines.push('');});
+    return lines.join('\n').trim();
+  }
+  function renderSummary(){
+    const groups=selectedBySupplier();
+    $('#summaryBody').innerHTML=groups.length?groups.map(group=>{
+      const units=group.items.reduce((sum,item)=>sum+item.qty,0), color=CATALOG[group.supplier].color;
+      return `<section class="order-supplier" style="--supplier:${color}"><div class="order-top"><h3>${escapeHTML(group.supplier)}</h3><div class="order-top-actions"><span>${units} uds.</span><button class="supplier-share" type="button" data-share-supplier="${escapeHTML(group.supplier)}" aria-label="Enviar pedido de ${escapeHTML(group.supplier)} por WhatsApp">WHATSAPP</button></div></div>${group.items.map(item=>`<div class="order-line"><span>${escapeHTML(item.name)}</span><b>${item.qty}</b></div>`).join('')}</section>`;
+    }).join(''):'<div class="summary-empty">Todavía no has añadido productos.</div>';
+  }
+  function showToast(message){ const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.remove('show'),1500); }
+  async function copyText(){
+    const text=orderText(); if(!text){showToast('El pedido está vacío');return false;}
+    try{await navigator.clipboard.writeText(text);}catch(e){const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();document.execCommand('copy');area.remove();}
+    showToast('Pedido copiado'); return true;
+  }
+
+  $('#supplierNav').addEventListener('click',event=>{
+    const button=event.target.closest('[data-supplier]');if(!button)return;
+    currentSupplier=button.dataset.supplier;searchAll=false;onlySelected=false;$('#scopeBtn').classList.remove('active');$('#scopeBtn').setAttribute('aria-pressed','false');render();button.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});window.scrollTo({top:0,behavior:'smooth'});
   });
-  if(!html) html=`<div style="text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--font-head);font-size:16px;letter-spacing:1px">SIN RESULTADOS</div>`;
-  document.getElementById('scroll-area').innerHTML=html;
-}
-
-function adj(prov,name,delta){ setQty(prov,name,Math.max(0,getQty(prov,name)+delta)); renderList(); }
-function setQtyR(prov,name,val){ setQty(prov,name,val); renderList(); }
-
-function updateNav(){
-  document.querySelectorAll('.nav-btn').forEach(b=>{
-    const p=b.dataset.prov;
-    const has=Object.keys(quantities).some(k=>k.startsWith(p+'||'));
-    b.classList.toggle('has-order',has);
+  $('#catalog').addEventListener('click',event=>{
+    const row=event.target.closest('.product');
+    if(row && (event.target.closest('.minus')||event.target.closest('.plus'))){const delta=event.target.closest('.plus')?1:-1;setQty(row.dataset.supplier,row.dataset.name,qty(row.dataset.supplier,row.dataset.name)+delta);return;}
+    if(event.target.closest('#onlySelected')){onlySelected=!onlySelected;render();return;}
+    if(event.target.closest('#addCustom')){const name=prompt(`Nuevo producto para ${currentSupplier}:`);if(!name||!name.trim())return;const clean=name.trim().toUpperCase();state.custom[currentSupplier]=state.custom[currentSupplier]||[];if(!state.custom[currentSupplier].some(x=>normalize(x)===normalize(clean)))state.custom[currentSupplier].push(clean);saveState();render();showToast('Producto añadido');return;}
+    if(row && row.querySelector('.product-note').textContent.startsWith('Añadido') && event.target.closest('.product-name')){if(confirm(`¿Eliminar “${row.dataset.name}”?`)){state.custom[row.dataset.supplier]=state.custom[row.dataset.supplier].filter(x=>x!==row.dataset.name);delete state.quantities[productId(row.dataset.supplier,row.dataset.name)];saveState();render();}}
   });
-}
-
-function updateSummaryBadge(){
-  const total=Object.keys(quantities).length;
-  const badge=document.getElementById('summary-badge');
-  badge.textContent=total;
-  badge.style.display=total>0?'block':'none';
-  document.getElementById('btn-summary').classList.toggle('has-items',total>0);
-}
-
-function openSummary(){
-  let html=''; let hasAny=false;
-  PROVS.forEach(prov=>{
-    const items=Object.entries(quantities).filter(([k])=>k.startsWith(prov+'||')).map(([k,v])=>({name:k.split('||')[1],qty:v}));
-    if(!items.length) return;
-    hasAny=true;
-    const c=DATA[prov].color;
-    html+=`<div class="summary-prov-block"><div class="summary-prov-name" style="color:${c};background:${hexToRgba(c,.15)}">${prov}</div>`;
-    items.forEach(i=>{ html+=`<div class="summary-item"><span class="summary-item-name">${i.name}</span><span class="summary-item-qty" style="color:${c}">${i.qty}</span></div>`; });
-    html+='</div>';
-  });
-  if(!hasAny) html='<div class="summary-empty">SIN PRODUCTOS<br>EN EL PEDIDO</div>';
-  document.getElementById('summary-body').innerHTML=html;
-  document.getElementById('sum-week').textContent=getWeekNumber();
-  document.getElementById('btn-copy').style.background=DATA[currentProv].color;
-  document.getElementById('summary-panel').classList.add('open');
-}
-function closeSummary(){ document.getElementById('summary-panel').classList.remove('open'); }
-function closeSummaryIfBg(e){ if(e.target.id==='summary-panel') closeSummary(); }
-
-function confirmReset(){ if(confirm('¿Resetear todos los pedidos?')) doReset(); }
-function doReset(){ quantities={}; updateNav(); updateSummaryBadge(); renderList(); closeSummary(); dismissBanner(); showToast('¡Reseteado!'); }
-function dismissBanner(){ document.getElementById('reset-banner').classList.remove('show'); }
-
-function copyOrder(){
-  let lines=[`PEDIDO SEMANA ${getWeekNumber()} — IRISH TAVERN\n`];
-  let hasAny=false;
-  PROVS.forEach(prov=>{
-    const items=Object.entries(quantities).filter(([k])=>k.startsWith(prov+'||')).map(([k,v])=>({name:k.split('||')[1],qty:v}));
-    if(!items.length) return;
-    hasAny=true;
-    lines.push(`\n── ${prov} ──`);
-    items.forEach(i=>lines.push(`  ${i.name}: ${i.qty}`));
-  });
-  if(!hasAny){ showToast('Sin productos'); return; }
-  const text=lines.join('\n');
-  if(navigator.share){ navigator.share({title:'Pedido Irish Tavern',text}).catch(()=>{}); }
-  else if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>showToast('¡Copiado!')); }
-  else{ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('¡Copiado!'); }
-}
-
-function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800); }
-
-document.getElementById('search').addEventListener('input',e=>renderList(e.target.value));
-
-// Init
-const wk=getWeekNumber();
-const wb=document.getElementById('week-badge');
-wb.textContent=`SEM ${wk}`;
-document.getElementById('sum-week').textContent=wk;
-if(isMonday()){ wb.classList.add('monday'); wb.textContent=`LUNES · SEM ${wk}`; document.getElementById('reset-banner').classList.add('show'); }
-document.getElementById('prov-label').style.color=DATA[PROVS[0]].color;
-document.documentElement.style.setProperty('--active-color',DATA[PROVS[0]].color);
-buildNav();
-renderList();
-</script>
+  $('#catalog').addEventListener('change',event=>{if(!event.target.matches('.qty'))return;const row=event.target.closest('.product');setQty(row.dataset.supplier,row.dataset.name,event.target.value);});
+  $('#search').addEventListener('input',render);
+  $('#clearSearch').addEventListener('click',()=>{$('#search').value='';$('#search').focus();render();});
+  $('#scopeBtn').addEventListener('click',()=>{searchAll=!searchAll;$('#scopeBtn').classList.toggle('active',searchAll);$('#scopeBtn').setAttribute('aria-pressed',String(searchAll));render();});
+  $('#openOrder').addEventListener('click',()=>{renderSummary();$('#orderDialog').showModal();});
+  $('#summaryBody').addEventListener('click',event=>{const button=event.target.closest('[data-share-supplier]');if(!button)return;const text=orderText(button.dataset.shareSupplier);if(!text){showToast('Ese proveedor no tiene productos');return;}window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;});
+  $('#closeOrder').addEventListener('click',()=>$('#orderDialog').close());
+  $('#orderDialog').addEventListener('click',event=>{if(event.target===$('#orderDialog'))$('#orderDialog').close();});
+  $('#copyOrder').addEventListener('click',copyText);
+  $('#shareOrder').addEventListener('click',async()=>{const text=orderText();if(!text){showToast('El pedido está vacío');return;}if(navigator.share){try{await navigator.share({title:`Pedido semana ${isoWeek()} · Irish Tavern`,text});}catch(e){if(e.name!=='AbortError')await copyText();}}else await copyText();});
+  $('#resetOrder').addEventListener('click',()=>{if(!stats().lines||!confirm('¿Borrar todas las cantidades del pedido?'))return;state.quantities={};saveState();renderSummary();render();showToast('Pedido borrado');});
+  $('#week').textContent=`SEMANA ${isoWeek()}`;
+  render();
+  </script>
 </body>
 </html>
