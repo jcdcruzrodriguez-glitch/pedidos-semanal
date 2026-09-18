@@ -11,6 +11,7 @@
   <style>
     :root{color-scheme:dark;--bg:#07100c;--panel:#0d1913;--panel2:#122219;--line:#20352a;--text:#f4f7f5;--muted:#91a49a;--faint:#5f7569;--brand:#22c55e;--brand-soft:rgba(34,197,94,.13);--danger:#fb7185;--shadow:0 20px 55px rgba(0,0,0,.4)}
     *{box-sizing:border-box}
+    [hidden]{display:none!important}
     html{background:var(--bg);scroll-behavior:smooth}
     body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -180px,#173a26 0,transparent 42%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
     button,input{font:inherit}
@@ -22,6 +23,8 @@
     h1{font-size:21px;line-height:1.05;margin:0;letter-spacing:-.02em}
     .week{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;color:var(--muted)}
     .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+    .auto-row{display:flex;margin-top:8px}
+    .auto-open{width:100%;height:40px;border:1px solid rgba(34,197,94,.45);border-radius:12px;background:rgba(34,197,94,.11);color:#76e69e;font-size:12px;font-weight:900;letter-spacing:.02em}
     .search-wrap{position:relative}
     .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
     #search{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:none;padding:0 38px 0 36px;font-size:16px}
@@ -85,6 +88,16 @@
     .order-line b{color:var(--supplier);font-size:16px}
     .summary-empty{text-align:center;color:var(--muted);padding:42px 15px}
     .summary-actions{gap:8px;padding:11px 16px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--panel)}
+    .import-intro{font-size:13px;line-height:1.45;color:var(--muted);margin:0 0 14px}
+    .file-box{display:block;border:1px solid var(--line);border-radius:14px;background:var(--panel2);padding:12px;margin-bottom:10px}
+    .file-box strong{display:block;font-size:13px;margin-bottom:4px}.file-box span{display:block;color:var(--muted);font-size:11px;margin-bottom:9px}
+    .file-box input{width:100%;font-size:12px;color:var(--muted)}
+    .calc-note{font-size:11px;line-height:1.45;color:var(--faint);margin:12px 1px}
+    .auto-status{padding:11px 12px;border-radius:12px;background:var(--brand-soft);color:#a7f3c0;font-size:12px;line-height:1.4;margin-bottom:12px}
+    .auto-group{margin:15px 0}.auto-group h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--brand);margin:0 0 6px}
+    .auto-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+    .auto-line strong{font-size:13px}.auto-line small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.auto-qty{font-size:18px;font-weight:900;color:var(--brand)}
+    .warning-box{border:1px solid rgba(234,179,8,.35);background:rgba(234,179,8,.08);border-radius:12px;padding:10px 12px;color:#e8d38a;font-size:11px;line-height:1.45;margin:10px 0}
     .action{flex:1;min-height:44px;border-radius:11px;border:1px solid var(--line);background:var(--panel2);font-size:12px;font-weight:900}
     .action.primary{background:#22c55e;color:#041108;border-color:#22c55e}
     .action.danger{color:var(--danger);border-color:rgba(251,113,133,.45);flex:0 0 auto;padding-inline:12px}
@@ -108,6 +121,7 @@
       </div>
       <button class="scope-btn" id="scopeBtn" type="button" aria-pressed="false">Todos</button>
     </div>
+    <div class="auto-row"><button class="auto-open" id="openAuto" type="button">IMPORTAR VENTAS Y CALCULAR PEDIDO</button></div>
   </header>
   <nav class="supplier-nav" id="supplierNav" aria-label="Proveedores"></nav>
   <main id="catalog"></main>
@@ -129,6 +143,20 @@
       </div>
     </div>
   </dialog>
+  <dialog id="autoDialog">
+    <div class="summary">
+      <div class="handle"></div>
+      <div class="summary-head"><div><div class="eyebrow">Cálculo semanal</div><h2>Sugerencia automática</h2></div><button class="close" id="closeAuto" aria-label="Cerrar">×</button></div>
+      <div class="summary-body" id="autoBody">
+        <p class="import-intro">Selecciona los dos archivos exportados por el TPV. El cálculo se hace en este dispositivo y los archivos no se envían a ningún servidor.</p>
+        <label class="file-box"><strong>1. Ventas de productos</strong><span>Archivo con Categoría, Producto y Unidades.</span><input id="salesFile" type="file" accept=".csv,text/csv"></label>
+        <label class="file-box"><strong>2. Productos con complementos</strong><span>Sirve para pintas, medias pintas y refrescos de cada copa.</span><input id="extrasFile" type="file" accept=".csv,text/csv"></label>
+        <p class="calc-note">Copas: 8 cl por servicio. Barril: 33 cl la media pinta y 50 cl la pinta. Los cócteles usan las cantidades de la guía. Como aún no hay inventario, la propuesta repone lo consumido y redondea al formato de compra.</p>
+        <button class="action primary" id="calculateAuto" type="button">CALCULAR SUGERENCIA</button>
+      </div>
+      <div class="summary-actions" id="autoActions" hidden><button class="action" id="backAuto" type="button">VOLVER</button><button class="action primary" id="applyAuto" type="button">AÑADIR AL PEDIDO</button></div>
+    </div>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -144,6 +172,32 @@
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   const escapeHTML = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const productId = (supplier,name) => encodeURIComponent(`${supplier}|${name}`);
+
+  const AUTO_ITEMS={
+    guinness:['Carballo','GUINNES 30 LITROS',30000,'ml','barril'],paulanerOriginal:['Carballo','PAULANER B/30 L ORGMUCHNER',30000,'ml','barril'],paulanerTrigo:['Carballo','PAULANER B/30 L HWEISBEER TRIGO',30000,'ml','barril'],murphys:['Carballo','MURPHY BARRIL 30 L ROJA',30000,'ml','barril'],affligem:['Carballo','AFFLIGEM DOUBLE BARRIL 20L SANKEY ES',20000,'ml','barril'],lagunitas:['Carballo','LAGUNITAS IPA 20 LITROS',20000,'ml','barril'],cruzReserva:['Carballo','CC GRAN RSVA 20 LITROS',20000,'ml','barril'],hopHouse:['Carballo','GUINNESS HOP HOUSE 13 BARRIL 30L ES',30000,'ml','barril'],
+    mahou:['Tardio','MAHOU 5 ESTRELLAS RET. 24 BOT. 1/3',24,'unit','caja'],estrella1870:['Carballo','18/70 LA RUBIA BR CAJA 24X33CL ES',24,'unit','caja'],cruzcampo:['Carballo','CC 1/3 NORMAL RET',24,'unit','caja'],tinto:['Schweppes','LA CASERA TINTO DE VERANO LIMÓN RET. 275 ML × 24',24,'unit','caja'],alhambra1925:['Tardio','ALHAMBRA RESERVA 1925 1/3 NR',24,'unit','caja'],ladron:['Carballo','LADRON DE MANZANAS 1/3 RET',24,'unit','caja'],amstel:['Carballo','AMSTEL 1/3 RET',24,'unit','caja'],mahou00:['Tardio','MAHOU 0,0 TOSTADA RET. 24 BOT. 1/3',24,'unit','caja'],aguilaSin:['Carballo','EL AGUILA SIN FILTRAR S/RET',24,'unit','caja'],cruzRadler:['Carballo','CRUZCAMPO RADLER RET. 1/3',24,'unit','caja'],heineken:['Carballo','HEINEKEN 1/3 RET',24,'unit','caja'],amstel00:['Carballo','AMSTEL ORO 0,0 1/3 RET TOSTADA',24,'unit','caja'],cruz1904:['Carballo','CRUZCAMPO 1904 BR CAJA 24 × 33 CL',24,'unit','caja'],heineken00:['Carballo','HEINEKEN 0,0% 1/3 RET',24,'unit','caja'],corona:['Tardio','CORONA LOOSE 35,5 CL × 24',24,'unit','caja'],alcazar:['Carballo','EL ALCAZAR 1/3 S/R C12',12,'unit','caja'],leffe:['Tardio','LEFFE TRIPLE 24 BOT. 1/3',24,'unit','caja'],aguila:['Carballo','EL AGUILA BR CAJA 24X33CL ES 2025',24,'unit','caja'],desperados:['Carballo','DESPERADOS BR CAJA 24X33CL ES',24,'unit','caja'],moretti:['Carballo','BIRRA MORETTI 1/3 NR',24,'unit','caja'],alhambraRoja:['Tardio','ALHAMBRA RESERVA ROJA 1/3 NR',24,'unit','caja'],judas:['Carballo','JUDAS 1/3 12 NR',12,'unit','caja'],ambar00:['Sánchez Montero','ÁMBAR 0,0 TOSTADA 1/3 RET. 24 BOT.',24,'unit','caja'],ambarRadler:['Sánchez Montero','ÁMBAR RADLER 1/3 RET. 24 BOT.',24,'unit','caja'],ambar:['Sánchez Montero','ÁMBAR ESPECIAL LN 1/3 RET. 24 BOT.',24,'unit','caja'],bud:['Tardio','BUDWEISER 0,33 × 24',24,'unit','caja'],
+    deliriumRed:['Bierwinkel','DELIRIUM RED 33 CL',1,'unit','botella'],delirium:['Bierwinkel','DELIRIUM TREMENS 33 CL',1,'unit','botella'],gulden:['Bierwinkel','GULDEN DRAAK 33 CL',1,'unit','botella'],guldenFire:['Bierwinkel','GULDEN DRAAK FIRE 33 CL',1,'unit','botella'],guldenStout:['Bierwinkel','GULDEN DRAAK IMPERIAL STOUT 33 CL',1,'unit','botella'],guldenSmoked:['Bierwinkel','GULDEN DRAAK SMOKED 33 CL',1,'unit','botella'],magnersBerry:['Bierwinkel','MAGNERS SIDRA BERRY 56,8 CL',1,'unit','botella'],magnersApple:['Bierwinkel','MAGNERS SIDRA MANZANA 56,8 CL',1,'unit','botella'],magnersPear:['Bierwinkel','MAGNERS SIDRA PEAR 56,8 CL',1,'unit','botella'],chimay:['Bierwinkel','CHIMAY 150 33 CL',1,'unit','botella'],
+    coke:['Coca-Cola','COCA-COLA VR 237 ML × 24',5688,'ml','caja'],cokeZero:['Coca-Cola','COCA-COLA ZERO VR 237 ML × 24',5688,'ml','caja'],cokeZeroZero:['Coca-Cola','COCA-COLA ZERO ZERO VR 237 ML × 24',5688,'ml','caja'],cokeLight:['Coca-Cola','COCA-COLA LIGHT VR 237 ML × 24',5688,'ml','caja'],fantaOrange:['Coca-Cola','FANTA NARANJA VR 237 ML × 24',5688,'ml','caja'],fantaLemon:['Coca-Cola','FANTA LIMÓN VR 237 ML × 24',5688,'ml','caja'],sprite:['Coca-Cola','SPRITE VR 200 ML × 24',4800,'ml','caja'],aquarius:['Coca-Cola','AQUARIUS VR 300 ML × 24',7200,'ml','caja'],aquariusOrange:['Coca-Cola','AQUARIUS NARANJA VR 300 ML × 24',7200,'ml','caja'],water:['Coca-Cola','AQUABONA PET 350 ML × 24',8400,'ml','caja'],royalYuzu:['Coca-Cola','ROYAL BLISS SIGNATURE TONIC 200 ML × 24',4800,'ml','caja'],royalOrange:['Coca-Cola','ROYAL BLISS NARANJA 200 ML × 24',4800,'ml','caja'],royalLemon:['Coca-Cola','ROYAL BLISS LEMON MIXER 200 ML × 24',4800,'ml','caja'],royalBerry:['Coca-Cola','ROYAL BLISS AROMATIC BERRY 200 ML × 24',4800,'ml','caja'],monster:['Coca-Cola','MONSTER ENERGY 250 ML × 24',6000,'ml','caja'],tonic:['Schweppes','SCHWEPPES TÓNICA RET. 28 × 200 ML',5600,'ml','caja'],tonicZero:['Schweppes','SCHWEPPES TÓNICA ZERO RET. 28 × 20 CL',5600,'ml','caja'],limeTonic:['Schweppes','SCHWEPPES SELECTION TÓNICA TOQUE DE LIMA 24 × 20 CL',4800,'ml','caja'],soda:['Schweppes','SCHWEPPES SODA RET. 28 × 200 ML',5600,'ml','caja'],wildBerry:['Schweppes','SCHWEPPES WILD BERRY RET. 28 × 20 CL',5600,'ml','caja'],grapefruit:['Schweppes','SCHWEPPES POMELO RET. 28 × 200 ML',5600,'ml','caja'],premiumGrapefruit:['Schweppes','SCHWEPPES SELECTION POMELO 12 × 20 CL',2400,'ml','caja'],premiumLemon:['Schweppes','SCHWEPPES SELECTION LIMÓN 12 × 20 CL',2400,'ml','caja'],premiumOrange:['Schweppes','SCHWEPPES SELECTION NARANJA 12 × 20 CL',2400,'ml','caja'],gingerBeer:['Schweppes','SCHWEPPES SELECTION GINGER BEER 12 × 20 CL',2400,'ml','caja'],sevenUp:['Schweppes','SEVEN UP FREE RET. 24 × 200 ML',4800,'ml','caja'],casera:['Schweppes','LA CASERA GASEOSA 1 L × 12',12000,'ml','caja'],trinaOrange:['Schweppes','TRINA NARANJA LOW CAL RET. 24 U',4800,'ml','caja'],trinaLemon:['Schweppes','TRINA LIMÓN LOW CAL RET. 24 × 275 ML',6600,'ml','caja'],orangeJuice:['Schweppes','VIDA NARANJA BATUKA 200 ML × 24',4800,'ml','caja'],pineappleJuice:['Schweppes','VIDA PIÑA BATUKA 200 ML × 24',4800,'ml','caja'],peachJuice:['Schweppes','VIDA MELOCOTÓN BATUKA 200 ML × 24',4800,'ml','caja'],tomatoJuice:['Schweppes','VIDA TOMATE BATUKA 200 ML × 24',4800,'ml','caja'],nesteaPassion:['Barrero','NESTEA TE VERDE MARACUYA 1/3 CRISTAL X 24',7920,'ml','caja'],nestea:['Barrero','NESTEA LIMON 1/3 CRISTAL X 24',7920,'ml','caja'],nesteaZero:['Barrero','NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X 24',7920,'ml','caja'],pedras:['Barrero','AGUA C/ GAS PEDRAS VID250 X 24',6000,'ml','caja'],feverRaspberry:['Barrero','FEVERTREE RASPBERRY 20CL X 24',4800,'ml','caja'],feverIndian:['Barrero','FEVERTREE INDIAN TONIC',4800,'ml','caja'],redBull:['Inbraex','RED BULL ENERGY DRINK 24 × 250 ML',6000,'ml','caja'],
+    beefeater:['Carballo','BEFFEATER 0.70',700,'ml','botella'],seagrams:['Carballo',"GIN SEAGRAM'S 0.70CL",700,'ml','botella'],martinMiller:['Barrero','GIN MARTIN MILLERS 70CL X 6',700,'ml','botella'],tanqueray:['Carballo','GINEBRA TANQUERAY 0.70 L',700,'ml','botella'],larios:['Carballo','GIN LARIOS 0.70',700,'ml','botella'],bombay:['Carballo','G.BOMBAY SAPPHIRE 0.70',700,'ml','botella'],beefeaterBlack:['Carballo','BEEFEATER BLACK 0.70',700,'ml','botella'],bulldog:['Dyexco','GINEBRA BULLDOG 70 CL',700,'ml','botella'],larios12:['Carballo','LARIOS 12 0.70',700,'ml','botella'],roku:['Carballo','ROKU GIN SELECT EDITION 0.70',700,'ml','botella'],hendricks:['Dyexco',"GIN HENDRICK'S 70 CL",700,'ml','botella'],nordes:['Carballo','GIN NORDES 0.70',700,'ml','botella'],gvine:['Carballo','GIN GVINE FLORAISON 0.70',700,'ml','botella'],gin1890:['Barrero','EXOTICA GIN 1890 6/70CL',700,'ml','botella'],brockmans:['Carballo','GIN BROCKSMANS 0.70',700,'ml','botella'],ampersandPink:['Carballo','AMPERSAND PINK 0.7',700,'ml','botella'],puertoFresa:['Carballo','PUERTO DE INDIAS FRESA 0.70',700,'ml','botella'],macaronesian:['Dyexco','MACARONESIA WHITE GIN 70 CL',700,'ml','botella'],
+    barcelo:['Dyexco','RON BARCELÓ AÑEJO 70 CL',700,'ml','botella'],barceloImperial:['Dyexco','RON BARCELÓ IMPERIAL',700,'ml','botella'],brugal:['Carballo','RON BRUGAL AÑEJO 0.70',700,'ml','botella'],santaTeresa:['Carballo','STA TERESA G.RESERVA 0.70',700,'ml','botella'],havanaOrigen:['Carballo','HAVANA ORIGEN 0,70 CL',700,'ml','botella'],havana7:['Carballo','HAVANA 7 0.70',700,'ml','botella'],bacardi:['Carballo','BACARDI C.BLANCA 1L',1000,'ml','botella'],legendario:['Tardio','RON LEGENDARIO ELIXIR 7 AÑOS 70 CL',700,'ml','botella'],bumbu:['Carballo','BUMBU ORIGINAL 0.70CL',700,'ml','botella'],zacapa:['Carballo','ZACAPA CENT 23Y 70CL',700,'ml','botella'],
+    absolut:['Carballo','VODKA ABSOLUT 0.70',700,'ml','botella'],greyGoose:['Carballo','GREY GOOSE ORIGINAL 0.70',700,'ml','botella'],khor:['Barrero','VODKA KHOR PLATINUM 70CL X 6',700,'ml','botella'],
+    redLabel:['Carballo','J.WALKER E.RJ. 0,70L',700,'ml','botella'],jb:['Carballo','WHISKY J.B. 700',700,'ml','botella'],cutty:['Carballo','WHISKY CUTTY SARK 0.70',700,'ml','botella'],ballantines:['Carballo','BALLANTINES 700 CC',700,'ml','botella'],blackLabel:['Carballo','J.WALKER E.NEGRA 0.70 L',700,'ml','botella'],ballantines10:['Carballo','BALLANTINES 10A 0.70',700,'ml','botella'],doubleBlack:['Carballo','J.W.DOUBLE BLACK',700,'ml','botella'],dewar:['Carballo','W.WHITE LABEL 0.70',700,'ml','botella'],dyc:['Carballo','WHISKY DYC 0.70L',700,'ml','botella'],jameson:['Carballo','WHISKY JAMESON 0.70 CL',700,'ml','botella'],connemara:['Carballo','CONNEMARA TUBED 0.70',700,'ml','botella'],fourRoses:['Carballo','FOUR ROSES 70CL',700,'ml','botella'],jack:['Dyexco',"JACK DANIEL'S 70 CL",700,'ml','botella'],jackApple:['Dyexco',"JACK DANIEL'S TENNESSEE APPLE 70 CL",700,'ml','botella'],jackFire:['Dyexco',"JACK DANIEL'S TENNESSEE FIRE 70 CL",700,'ml','botella'],gentleman:['Dyexco','GENTLEMAN JACK 70 CL',700,'ml','botella'],
+    aperol:['Carballo','APEROL 0.70 CL',700,'ml','botella'],campari:['Carballo','CAMPARI 70 CL',700,'ml','botella'],martiniVibrante:['Carballo','MARTINI S/A VIBRANTE 0.70',700,'ml','botella'],martiniFloreale:['Carballo','MARTINI S/A FLOREALE 0.70',700,'ml','botella'],yzaguirre:['Dyexco','VERMOUTH YZAGUIRRE ROJO 1 L',1000,'ml','botella'],prosecco:['Barrero','FOLLADOR PROSECCO TREVISO 75CL X 6',750,'ml','botella'],chandon:['Barrero','BRUT IMPERIAL MOET CHANDON 75CL',750,'ml','botella'],amarguinha:['Barrero','AMARGUINHA 70CL X 6',700,'ml','botella'],beirao:['Barrero','LICOR BEIRAO 70CL X 6',700,'ml','botella'],baileys:['Carballo','LC BAILEYS 0,70L',700,'ml','botella'],amaretto:['Carballo','AMARETO DISARONNO ORIGINALE 0.70',700,'ml','botella'],ruavieja:['Carballo','LC.HIERBAS RUAVIEJA 0.70',700,'ml','botella'],frangelico:['Carballo','LICOR FRANGELICO 0.70CL',700,'ml','botella'],jager:['Carballo','JAGERMEISTER',700,'ml','botella'],kahlua:['Inbraex','LICOR KAHLÚA 70 CL',700,'ml','botella'],cachaca:['Barrero','CACHAÇA IRACEMA 75CL X 12',750,'ml','botella'],mezcal:['Inbraex','MEZCAL ARTESANAL ENCANTADO 70 CL',700,'ml','botella'],pisco:['Inbraex','PISCO BARSOL PURO QUEBRANTA 70 CL',700,'ml','botella'],licorCoco:['Inbraex','LICOR COCO MONIN 70 CL',700,'ml','botella'],licorPeach:['Inbraex','LICOR MELOCOTÓN MONIN 70 CL',700,'ml','botella'],licorBanana:['Inbraex','LICOR PLÁTANO MONIN 70 CL',700,'ml','botella'],blueCuracao:['Inbraex','LICOR BLUE CURAÇAO MONIN 70 CL',700,'ml','botella'],
+    pureeCoco:['Inbraex','PURÉ COCO MONIN 1 L',1000,'ml','botella'],pureePineapple:['Inbraex','PURÉ PIÑA MONIN 1 L',1000,'ml','botella'],pureePassion:['Inbraex','PURÉ FRUTAS DE LA PASIÓN MONIN 1 L',1000,'ml','botella'],pureeMango:['Inbraex','PURÉ MANGO MONIN 1 L',1000,'ml','botella'],pureeStrawberry:['Inbraex','PURÉ FRESA MONIN 1 L',1000,'ml','botella'],pureeForest:['Inbraex','PURÉ FRUTOS ROJOS MONIN 1 L',1000,'ml','botella'],pureeBanana:['Inbraex','PURÉ PLÁTANO MONIN 1 L',1000,'ml','botella'],pureeApple:['Inbraex','PURÉ MANZANA VERDE MONIN 1 L',1000,'ml','botella'],pureeRaspberry:['Inbraex','PURÉ FRAMBUESA MONIN 1 L',1000,'ml','botella'],pureeRhubarb:['Inbraex','PURÉ RHUBARB MONIN 1 L',1000,'ml','botella'],pureePeach:['Inbraex','PURÉ MELOCOTÓN MONIN 1 L',1000,'ml','botella'],rumSyrup:['Inbraex','SIROPE RON CARIBBEAN MONIN 70 CL',700,'ml','botella'],orgeat:['Inbraex','SIROPE ALMENDRA MONIN 70 CL',700,'ml','botella'],spicy:['Inbraex','SIROPE SPICY MONIN 70 CL',700,'ml','botella'],gingerSyrup:['Inbraex','SIROPE GINGER (JENGIBRE) MONIN 70 CL',700,'ml','botella'],mangoSpicy:['Inbraex','SIROPE MANGO SPICY MONIN 70 CL',700,'ml','botella'],grapefruitSyrup:['Inbraex','SIROPE POMELO ROSA MONIN 70 CL',700,'ml','botella'],coldBrew:['Inbraex','SIROPE CAFÉ COLD BREW MONIN 70 CL',700,'ml','botella']
+  };
+
+  const exactMap=(source)=>Object.fromEntries(Object.entries(source).map(([name,value])=>[normalize(name),value]));
+  const DRAFT_RULES=exactMap({'GUINNESS':'guinness','PAULANER ORIGINAL MÜNCHNER':'paulanerOriginal','PAULANER HEFE-WEISSBIER':'paulanerTrigo',"MURPHY’S IRISH RED":'murphys','AFFLIGEM DOUBLE':'affligem','LAGUNITAS IPA':'lagunitas','CRUZCAMPO GRAN RESERVA':'cruzReserva','HOP HOUSE 13 BY GUINNESS':'hopHouse'});
+  const UNIT_SALES=exactMap({'MAHOU 5 ESTRELLAS':'mahou','18/70':'estrella1870','CRUZCAMPO PILSEN':'cruzcampo','TINTO DE VERANO':'tinto','ALHAMBRA RESERVA 1925':'alhambra1925','LADRÓN DE MANZANAS':'ladron','AMSTEL ORIGINAL':'amstel','MAHOU 00 TOSTADA':'mahou00','ÁGUILA SIN FILTRAR':'aguilaSin','CRUZCAMPO RADLER':'cruzRadler','HEINEKEN':'heineken','AMSTEL ORO 00 TOSTADA':'amstel00','CRUZCAMPO 1904':'cruz1904','HEINEKEN 00':'heineken00','CORONA':'corona','EL ALCÁZAR':'alcazar','LEFFE TRIPLE':'leffe','ÁGUILA ESPECIAL':'aguila','DESPERADOS':'desperados','BIRRA MORETTI':'moretti','ALHAMBRA RESERVA ROJA':'alhambraRoja','JUDAS':'judas','ÁMBAR 000 TOSTADA':'ambar00','ÁMBAR RADLER':'ambarRadler','ÁMBAR ESPECIAL':'ambar','BUDWEISER':'bud','DELÍRIUM RED':'deliriumRed','DELÍRIUM TREMENS':'delirium','GULDEN DRAAK CLASSIC':'gulden','GULDEN DRAAK FIRE':'guldenFire','GULDEN DRAAK IMPERIAL STOUT':'guldenStout','GULDEN DRAAK SMOKED':'guldenSmoked','MAGNERS BERRY':'magnersBerry','MAGNERS ORIGINAL 568 cl':'magnersApple','MAGNERS PEAR':'magnersPear','CHIMAY JAUNE':'chimay'});
+  const DRINK_SALES=exactMap({'COCA-COLA':'coke','COCA-COLA ZERO':'cokeZero','COCA-COLA ZERO-ZERO':'cokeZeroZero','COCA-COLA LIGHT':'cokeLight','FANTA NARANJA':'fantaOrange','FANTA LIMÓN':'fantaLemon','SPRITE':'sprite','AQUARIUS':'aquarius','AQUARIUS NARANJA':'aquariusOrange','AGUA':'water','ROYAL BLISS YUZU TONIC WATER':'royalYuzu','ROYAL BLISS NARANJA':'royalOrange','ROYAL BLISS LIMÓN':'royalLemon','ROYAL BLISS BERRY':'royalBerry','MONSTER 250ml':'monster','TÓNICA SCHWEPPES':'tonic','TÓNICA SCHWEPPES ZERO':'tonicZero','TÓNICA SCHWEPPES PREMIUM':'limeTonic','TÓNICA SCHWEPPES WILD BERRY':'wildBerry','POMELO SCHWEPPES':'grapefruit','POMELO SCHWEPPES SELECTION':'premiumGrapefruit','LIMÓN PREMIUM SCHWEPPES':'premiumLemon','NARANJA PREMIUM SCHWEPPES':'premiumOrange','GINGER BEER SCHWEPPES':'gingerBeer','7 UP ZERO':'sevenUp','TRINA NARANJA':'trinaOrange','TRINA LIMÓN':'trinaLemon','ZUMO NARANJA':'orangeJuice','ZUMO PIÑA':'pineappleJuice','ZUMO MELOCOTÓN':'peachJuice','ZUMO TOMATE':'tomatoJuice','NESTEA MARACUYÁ':'nesteaPassion','NESTEA LIMÓN':'nestea','NESTEA LIMON SIN AZUCAR':'nesteaZero','AGUA CON GAS PEDRAS SALGADAS':'pedras','FEVER-TREE RASPBERRY & RHUBARB TONIC':'feverRaspberry','FEVER-TREE INDIAN TONIC':'feverIndian'});
+  const SPIRIT_SALES=exactMap({'Barcelo Añejo':'barcelo','Barceló Imperial':'barceloImperial','Brugal Añejo':'brugal','Santa Teresa Añejo Gran Reserva':'santaTeresa','HAVANA CLUB AÑEJO ORIGEN':'havanaOrigen','Havana Club 7 Años':'havana7','Bacardí (CARTA BLANCA)':'bacardi','Legendario Elixir de Cuba':'legendario','BUMBU ORIGINAL':'bumbu','Zacapa Centenario Solera 23':'zacapa','ABSOLUT':'absolut','GREY GOOSE':'greyGoose','Beefeater':'beefeater','Seagrams Gin':'seagrams','Martin Millers Gin':'martinMiller','Tanqueray':'tanqueray','Larios Mediterranean Gin':'larios','Bombay Sapphire':'bombay','BEEFEATER BLACK':'beefeaterBlack','Bulldog':'bulldog','Larios 12':'larios12','Roku Gin':'roku','Hendricks':'hendricks','Nordés':'nordes','Gvine Floraison':'gvine','GIN 1890 EXÓTICA':'gin1890','Brockmans Gin':'brockmans','Ampersand Strawberry':'ampersandPink','Puerto de Indias Strawberry':'puertoFresa','MACARONESIAN WHITE GIN':'macaronesian','Johnnie Walker Red Label':'redLabel','JB':'jb','Cutty Sark':'cutty','Ballantine’s':'ballantines','Johnnie Walker Black Label':'blackLabel','BALLANTINE’S 10 (AMERICAN BARREL)':'ballantines10','Johnnie Walker Double Black':'doubleBlack','Dewars White Label':'dewar','DYC':'dyc','Jameson':'jameson','Connemara Original Tubed (AHUMADO)':'connemara','Four Roses':'fourRoses','Jack Daniel’s Old N7':'jack','JACK DANIEL’S APPLE':'jackApple','Jack Daniel’s Fire':'jackFire','Jack Daniel’s Gentleman Jack':'gentleman','AMARGUINHA':'amarguinha','BEIRAO':'beirao','BAILEYS ORIGINAL':'baileys','AMARETTO DISARONNO':'amaretto','LICOR HIERBAS RUAVIEJA':'ruavieja','FRANGELICO':'frangelico','JÄGERMEISTER':'jager','APEROL':'aperol','CAMPARI':'campari'});
+  const MIXER_RULES=exactMap({'COCA-COLA':'coke','COCA-COLA ZERO':'cokeZero','COCA-COLA ZERO-ZERO':'cokeZeroZero','COCA-COLA LIGHT':'cokeLight','FANTA NARANJA':'fantaOrange','FANTA LIMÓN':'fantaLemon','SPRITE':'sprite','7 UP':'sevenUp','ROYAL BLISS LIMÓN':'royalLemon','ROYAL BLISS NARANJA':'royalOrange','ROYAL BLISS BERRY':'royalBerry','ROYAL BLISS YUZU TONIC WATER':'royalYuzu','TÓNICA SCHWEPPES ORIGINAL':'tonic','TÓNICA SCHWEPPES ZERO':'tonicZero','TÓNICA SCHWEPPES SELECTION TOQUE DE LIMA':'limeTonic','SCHWEPPES LIMÓN PREMIUM':'premiumLemon','SCHWEPPES NARANJA PREMIUM':'premiumOrange','WILD BERRY SCHWEPPES':'wildBerry','GINGER BEER SCHWEPPES SELECTION':'gingerBeer','GINGER ALE SCHWEPPES':'gingerBeer','FEVER-TREE INDIAN TONIC':'feverIndian','FEVER-TREE RASPERRY & RHUBARB':'feverRaspberry','RED BULL':'redBull','ZUMO NARANJA':'orangeJuice','ZUMO PIÑA':'pineappleJuice','AGUA':'water','HIELO & BOTELLA AGUA':'water'});
+  const MIXER_BOTTLE_ML={coke:237,cokeZero:237,cokeZeroZero:237,cokeLight:237,fantaOrange:237,fantaLemon:237,sprite:200,sevenUp:200,royalLemon:200,royalOrange:200,royalBerry:200,royalYuzu:200,tonic:200,tonicZero:200,limeTonic:200,premiumLemon:200,premiumOrange:200,wildBerry:200,gingerBeer:200,feverIndian:200,feverRaspberry:200,redBull:250,orangeJuice:200,pineappleJuice:200,water:350};
+  const FLAVOURS=exactMap({'Coco':'pureeCoco','Piña':'pureePineapple','Fruta de la pasión':'pureePassion','Fruta de la pasion':'pureePassion','Mango':'pureeMango','Fresa':'pureeStrawberry','Fruta del bosque':'pureeForest','Banana':'pureeBanana','Plátano':'pureeBanana','Manzana':'pureeApple','Frambuesa':'pureeRaspberry','Melocotón':'pureePeach'});
+  const COCKTAILS=exactMap({
+    'APEROL SPRITZ':{aperol:90,prosecco:125,soda:40},'BABILONIA':{cachaca:50,grapefruitSyrup:15,pureePassion:30},'BANANA ORANGE':{licorBanana:50,pureeBanana:20,orangeJuice:120,khor:25},'BLOODY MARY':{khor:50,tomatoJuice:200},'BLUE PEACH LEMONADE':{licorPeach:60,blueCuracao:15,sevenUp:100},'CAIPIRINHA':{cachaca:60,casera:100},'CAIPIROSKA':{khor:60,casera:100},'CHANDON GARDEN SPRITZ':{chandon:200},'COCO LOCO':{licorCoco:50,pureeCoco:20,pineappleJuice:120},'DAIQUIRI FROZEN FRUTAL':{bacardi:60,$flavour:30},'DAIQUIRI PINEAPPLE':{havanaOrigen:60,pureePineapple:30},'DOUBLE APPLE':{dewar:50,pureeApple:15},'ELECTRIC LEMONADE':{khor:50,blueCuracao:25,sevenUp:100},'ESPRESSO MARTINI':{kahlua:30,khor:50},'HUGO TROPICAL':{pureePassion:25,prosecco:200,soda:40},'MANGO MEZCAL':{mezcal:50,mangoSpicy:20},'MARGARITA MANGO SPICY':{beirao:20,mangoSpicy:25,pureeMango:15,spicy:10},'MARTINI PORN STAR':{pureePassion:30,prosecco:50},'MOJITO CLÁSICO':{bacardi:50,casera:100},'MOJITO FRUTAL':{bacardi:50,$flavour:50,casera:100},'MOSCOW MULE':{khor:60,gingerBeer:200},'NEGRONI':{roku:25,campari:25,yzaguirre:25},'PIÑA COLADA':{pineappleJuice:93,pureeCoco:53,pureePineapple:27,rumSyrup:27,brugal:50},'PISCO SOUR':{pisco:60},'SEX ON THE BEACH':{khor:50,licorPeach:25,orangeJuice:100},'TENNESSEE TEA':{jack:50,coke:237},
+    'BASILICO VIBRANTE':{martiniVibrante:60,orangeJuice:30,pureeMango:30,gingerBeer:100},'BELLINI SPRITZ':{martiniFloreale:50,pureePeach:25,gingerBeer:100},'SAN FRANCISCO':{orangeJuice:67,peachJuice:67,pineappleJuice:67},'SWEET & SPICY':{pureeRhubarb:60,gingerSyrup:20,spicy:20,gingerBeer:200},'VIRGIN CAPIROSKA FRUTAL':{$flavour:50,casera:100},'VIRGIN DAIQUIRI FROZEN FRUTAL':{rumSyrup:50,$flavour:50},'VIRGIN MOJITO CLASSIC':{rumSyrup:50,casera:100},'VIRGIN MOJITO ITALIANO':{martiniFloreale:50,casera:100},'VIRGIN MOJITO FRUTAL':{$flavour:50,casera:100},'VIRGIN PIÑA COLADA FROZEN':{pineappleJuice:218,pureeCoco:53,pureePineapple:27,rumSyrup:27}
+  });
 
   function loadState(){
     try{
@@ -285,6 +339,88 @@
     showToast('Pedido copiado'); return true;
   }
 
+  const autoFormHTML=$('#autoBody').innerHTML;
+  let latestSuggestion=[];
+  function parseCSV(text){
+    const clean=text.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    const first=(clean.split('\n')[0]||''), delimiter=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';
+    const rows=[];let row=[],field='',quoted=false;
+    for(let i=0;i<clean.length;i++){
+      const ch=clean[i];
+      if(ch==='"'){
+        if(quoted&&clean[i+1]==='"'){field+='"';i++;}else quoted=!quoted;
+      }else if(ch===delimiter&&!quoted){row.push(field.trim());field='';}
+      else if(ch==='\n'&&!quoted){row.push(field.trim());if(row.some(Boolean))rows.push(row);row=[];field='';}
+      else field+=ch;
+    }
+    row.push(field.trim());if(row.some(Boolean))rows.push(row);
+    if(rows.length<2)return [];
+    const headers=rows.shift().map(h=>normalize(h));
+    return rows.map(values=>Object.fromEntries(headers.map((h,i)=>[h,values[i]??''])));
+  }
+  const csvNumber=value=>Number(String(value??'').replace(/[^\d,.-]/g,'').replace(',','.'))||0;
+  function resetAutoForm(){
+    $('#autoBody').innerHTML=autoFormHTML;$('#autoActions').hidden=true;latestSuggestion=[];
+  }
+  function formatConsumed(item,amount){
+    if(item[3]==='unit')return `${Math.round(amount)} unidades vendidas`;
+    if(amount>=1000)return `${(amount/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} L calculados`;
+    return `${Math.round(amount)} ml calculados`;
+  }
+  function calculateSuggestion(sales,extras){
+    const totals={},reasons={},unmatched=new Map(),draftDetails={};
+    const add=(code,amount,reason)=>{if(!AUTO_ITEMS[code]||!amount)return;totals[code]=(totals[code]||0)+amount;(reasons[code]||(reasons[code]=new Set())).add(reason);};
+    extras.forEach(row=>{
+      const product=normalize(row.producto||''),extra=normalize(row.complemento||''),count=csvNumber(row.cantidad);
+      const draft=DRAFT_RULES[product];
+      if(draft&&(extra==='pinta'||extra==='media pinta')){add(draft,count*(extra==='pinta'?500:330),'Barril');draftDetails[product]=(draftDetails[product]||0)+count;return;}
+      const mixer=MIXER_RULES[extra];if(mixer)add(mixer,count*MIXER_BOTTLE_ML[mixer],'Combinados');
+      const cocktail=COCKTAILS[product],flavour=FLAVOURS[extra];if(cocktail&&cocktail.$flavour&&flavour)add(flavour,count*cocktail.$flavour,'Cócteles');
+    });
+    const relevantCategories=['cerveza barril','cerveza botella','refrescos','anejo','extra anejo','premium','gin','vodka','whisky','bourbon','especiado','cremas','licores','anis','aperitivo','blanco','tequila','vermut','cocteles'];
+    let salesUnits=0,coveredUnits=0;
+    sales.forEach(row=>{
+      const productName=row.producto||'',product=normalize(productName),category=normalize(row.categoria||''),count=csvNumber(row.unidades);salesUnits+=count;
+      const draft=DRAFT_RULES[product];
+      if(draft){const missing=Math.max(0,count-(draftDetails[product]||0));if(missing)add(draft,missing*500,'Barril sin tamaño indicado');coveredUnits+=count;return;}
+      const unit=UNIT_SALES[product];if(unit){add(unit,count,'Venta directa');coveredUnits+=count;return;}
+      const drink=DRINK_SALES[product];if(drink){const perBottle=MIXER_BOTTLE_ML[drink]||AUTO_ITEMS[drink][2];add(drink,count*perBottle,'Venta directa');coveredUnits+=count;return;}
+      const spirit=SPIRIT_SALES[product];if(spirit){add(spirit,count*80,'Copas de 8 cl');coveredUnits+=count;return;}
+      const recipe=COCKTAILS[product];if(recipe){Object.entries(recipe).forEach(([code,ml])=>{if(code!=='$flavour')add(code,count*ml,'Cócteles');});coveredUnits+=count;return;}
+      if(relevantCategories.some(key=>category.includes(key)))unmatched.set(productName,(unmatched.get(productName)||0)+count);
+    });
+    const suggestions=Object.entries(totals).map(([code,amount])=>{
+      const item=AUTO_ITEMS[code],quantity=Math.ceil(amount/item[2]);
+      return {code,supplier:item[0],name:item[1],quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
+    }).filter(x=>x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
+    return {suggestions,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
+  }
+  function renderAutoResults(result){
+    latestSuggestion=result.suggestions;
+    const groups=new Map();result.suggestions.forEach(item=>{if(!groups.has(item.supplier))groups.set(item.supplier,[]);groups.get(item.supplier).push(item);});
+    const warnings=result.unmatched.length?`<div class="warning-box"><strong>Quedan productos por relacionar</strong><br>${result.unmatched.slice(0,12).map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}${result.unmatched.length>12?` · y ${result.unmatched.length-12} más`:''}</div>`:'';
+    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}`;
+    $('#autoActions').hidden=false;
+  }
+  async function handleAutoCalculation(){
+    const salesFile=$('#salesFile')?.files[0],extrasFile=$('#extrasFile')?.files[0];
+    if(!salesFile||!extrasFile){showToast('Selecciona los dos archivos CSV');return;}
+    try{
+      const [salesText,extrasText]=await Promise.all([salesFile.text(),extrasFile.text()]);
+      const sales=parseCSV(salesText),extras=parseCSV(extrasText);
+      if(!sales.length||!extras.length||!('producto' in sales[0])||!('unidades' in sales[0])||!('complemento' in extras[0]))throw new Error('Formato CSV no reconocido');
+      renderAutoResults(calculateSuggestion(sales,extras));
+    }catch(e){showToast(e.message||'No se pudieron leer los archivos');}
+  }
+  function applySuggestion(){
+    if(!latestSuggestion.length)return;
+    latestSuggestion.forEach(item=>{
+      const id=productId(item.supplier,item.name),current=Number(state.quantities[id]||0);
+      state.quantities[id]=Math.max(current,item.quantity);
+    });
+    saveState();render();$('#autoDialog').close();showToast('Sugerencia añadida al pedido');
+  }
+
   $('#supplierNav').addEventListener('click',event=>{
     const button=event.target.closest('[data-supplier]');if(!button)return;
     currentSupplier=button.dataset.supplier;searchAll=false;onlySelected=false;$('#scopeBtn').classList.remove('active');$('#scopeBtn').setAttribute('aria-pressed','false');render();button.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});window.scrollTo({top:0,behavior:'smooth'});
@@ -300,6 +436,12 @@
   $('#search').addEventListener('input',render);
   $('#clearSearch').addEventListener('click',()=>{$('#search').value='';$('#search').focus();render();});
   $('#scopeBtn').addEventListener('click',()=>{searchAll=!searchAll;$('#scopeBtn').classList.toggle('active',searchAll);$('#scopeBtn').setAttribute('aria-pressed',String(searchAll));render();});
+  $('#openAuto').addEventListener('click',()=>{resetAutoForm();$('#autoDialog').showModal();});
+  $('#closeAuto').addEventListener('click',()=>$('#autoDialog').close());
+  $('#autoDialog').addEventListener('click',event=>{if(event.target===$('#autoDialog'))$('#autoDialog').close();});
+  $('#autoBody').addEventListener('click',event=>{if(event.target.closest('#calculateAuto'))handleAutoCalculation();});
+  $('#backAuto').addEventListener('click',resetAutoForm);
+  $('#applyAuto').addEventListener('click',applySuggestion);
   $('#openOrder').addEventListener('click',()=>{renderSummary();$('#orderDialog').showModal();});
   $('#summaryBody').addEventListener('click',event=>{const button=event.target.closest('[data-share-supplier]');if(!button)return;const text=orderText(button.dataset.shareSupplier);if(!text){showToast('Ese proveedor no tiene productos');return;}window.location.href=`https://wa.me/?text=${encodeURIComponent(text)}`;});
   $('#closeOrder').addEventListener('click',()=>$('#orderDialog').close());
