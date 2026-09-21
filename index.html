@@ -151,7 +151,7 @@
         <p class="import-intro">Selecciona los dos archivos exportados por el TPV. El cálculo se hace en este dispositivo y los archivos no se envían a ningún servidor.</p>
         <label class="file-box"><strong>1. Ventas de productos</strong><span>Archivo con Categoría, Producto y Unidades.</span><input id="salesFile" type="file" accept=".csv,text/csv"></label>
         <label class="file-box"><strong>2. Productos con complementos</strong><span>Sirve para pintas, medias pintas y refrescos de cada copa.</span><input id="extrasFile" type="file" accept=".csv,text/csv"></label>
-        <p class="calc-note">Copas: 8 cl por servicio. Barril: 33 cl la media pinta y 50 cl la pinta. Los cócteles usan las cantidades de la guía. Como aún no hay inventario, la propuesta repone lo consumido y redondea al formato de compra.</p>
+        <p class="calc-note">Refrescos, aguas y cervezas de botella se cuentan por unidades. Copas: 8 cl de alcohol por servicio. Barril: 33 cl la media pinta y 50 cl la pinta. Los cócteles usan las cantidades de la guía. Como aún no hay inventario, la propuesta repone lo consumido y redondea al formato de compra.</p>
         <button class="action primary" id="calculateAuto" type="button">CALCULAR SUGERENCIA</button>
       </div>
       <div class="summary-actions" id="autoActions" hidden><button class="action" id="backAuto" type="button">VOLVER</button><button class="action primary" id="applyAuto" type="button">AÑADIR AL PEDIDO</button></div>
@@ -165,6 +165,45 @@
   const passionTea=cafentoCold.find(item=>item.name==='ICED TEA MONT ROOIBOS MANGO');
   if(passionTea) passionTea.name='ICED TEA MONT ROOIBOS MARACUYÁ';
   cafentoCold.push({name:'ICED TEA MONT CEREZA',uses:0},{name:'ICED TEA MONT MORA',uses:0});
+  cafentoCold.push({name:'ICED TEA MONT ROOIBOS PERA',uses:0});
+  CATALOG.Cafento.categories['Chocolate caliente'].push({name:'MONT CHOCOLATE NEGRO NARANJA Y CANELA',uses:0});
+  CATALOG.Barrero.categories['Refrescos premium'].push({name:'AGUA C/ GAS PEDRAS LIMÓN VID250 X 24',uses:0});
+  CATALOG.Bierwinkel.categories['Cervezas belgas y especiales'].push({name:'LA CHOUFFE CHERRY 0,0 33 CL',uses:0});
+  CATALOG.Bierwinkel.categories['Cervezas belgas y especiales'].push({name:'LA CHOUFFE 0,0 33 CL',uses:0});
+  CATALOG.Carballo.categories['Ginebra'].push(
+    {name:'GIN MOMBASA STRAWBERRY 70 CL',uses:0},
+    {name:'GIN OBSESSION GLAMOROUS 70 CL',uses:0},
+    {name:'GIN PUERTO DE INDIAS CLASSIC 70 CL',uses:0},
+    {name:'GIN STAR OF BOMBAY 70 CL',uses:0},
+    {name:'GIN PUERTO DE INDIAS BLACKBERRY 70 CL',uses:0},
+    {name:'GIN PUERTO DE INDIAS GUADALQUIVIR 70 CL',uses:0},
+    {name:'GIN PUERTO DE INDIAS PURE BLACK 70 CL',uses:0},
+    {name:'BEEFEATER PINK LIGHT 70 CL',uses:0},
+    {name:'GIN CITADELLE 70 CL',uses:0}
+  );
+  CATALOG.Carballo.categories['Whisky y bourbon'].push({name:'MAKER’S MARK 70 CL',uses:0},{name:'YELLOW ROSE PREMIUM AMERICAN WHISKEY 70 CL',uses:0});
+  CATALOG.Carballo.categories['Ron'].push({name:'RON PAMPERO AÑEJO 70 CL',uses:0});
+  CATALOG.Carballo.categories['Tequila'].push({name:'TEQUILA PATRÓN SILVER 70 CL',uses:0},{name:'TEQUILA DON JULIO 70 70 CL',uses:0});
+  CATALOG.Carballo.categories['Vermut y aperitivos'].push(
+    {name:'MARTINI BIANCO 1 L',uses:0},
+    {name:'MARTINI RUBINO 70 CL',uses:0},
+    {name:'SOHO FINO SPRITZ ROSÉ 70 CL',uses:0}
+  );
+  CATALOG.Carballo.categories['Licores y otros'].push(
+    {name:'MALIBÚ 70 CL',uses:0},
+    {name:'LICOR MANZANA RIVES 70 CL',uses:0},
+    {name:'LICOR 43 70 CL',uses:0},
+    {name:'GRANADINA RIVES 1 L',uses:0},
+    {name:'LIMA RIVES 70 CL',uses:0},
+    {name:'LICOR SAFARI 70 CL',uses:0}
+  );
+  CATALOG.Barrero.categories['Destilados y licores'].push({name:'CREMA AMARGUINHA 70CL X 6',uses:0});
+  CATALOG.Dyexco.categories['Ron'].push({name:'RON BARCELÓ IMPERIAL PORTO CASK 70 CL',uses:0});
+  CATALOG['Montanera de la Dehesa']={color:'#84cc16',categories:{'Cervezas de botella':[
+    {name:'EG 1906 33 CL RETORNABLE × 24',uses:4},
+    {name:'1906 RED VINTAGE 33 CL × 24 RET.',uses:3},
+    {name:'EG RIVERA REPOSADA 33 CL × 24',uses:2}
+  ],'Ron':[{name:'RON AREHUCAS CARTA ORO 70 CL',uses:3}]}};
   const STORAGE_KEY = 'irish-tavern-pedidos-v4';
   const suppliers = Object.keys(CATALOG);
   let currentSupplier = suppliers[0];
@@ -181,7 +220,7 @@
     guinness:['Carballo','GUINNES 30 LITROS',30000,'ml','barril'],paulanerOriginal:['Carballo','PAULANER B/30 L ORGMUCHNER',30000,'ml','barril'],paulanerTrigo:['Carballo','PAULANER B/30 L HWEISBEER TRIGO',30000,'ml','barril'],murphys:['Carballo','MURPHY BARRIL 30 L ROJA',30000,'ml','barril'],affligem:['Carballo','AFFLIGEM DOUBLE BARRIL 20L SANKEY ES',20000,'ml','barril'],lagunitas:['Carballo','LAGUNITAS IPA 20 LITROS',20000,'ml','barril'],cruzReserva:['Carballo','CC GRAN RSVA 20 LITROS',20000,'ml','barril'],hopHouse:['Carballo','GUINNESS HOP HOUSE 13 BARRIL 30L ES',30000,'ml','barril'],
     mahou:['Tardio','MAHOU 5 ESTRELLAS RET. 24 BOT. 1/3',24,'unit','caja'],estrella1870:['Carballo','18/70 LA RUBIA BR CAJA 24X33CL ES',24,'unit','caja'],cruzcampo:['Carballo','CC 1/3 NORMAL RET',24,'unit','caja'],tinto:['Schweppes','LA CASERA TINTO DE VERANO LIMÓN RET. 275 ML × 24',24,'unit','caja'],alhambra1925:['Tardio','ALHAMBRA RESERVA 1925 1/3 NR',24,'unit','caja'],ladron:['Carballo','LADRON DE MANZANAS 1/3 RET',24,'unit','caja'],amstel:['Carballo','AMSTEL 1/3 RET',24,'unit','caja'],mahou00:['Tardio','MAHOU 0,0 TOSTADA RET. 24 BOT. 1/3',24,'unit','caja'],aguilaSin:['Carballo','EL AGUILA SIN FILTRAR S/RET',24,'unit','caja'],cruzRadler:['Carballo','CRUZCAMPO RADLER RET. 1/3',24,'unit','caja'],heineken:['Carballo','HEINEKEN 1/3 RET',24,'unit','caja'],amstel00:['Carballo','AMSTEL ORO 0,0 1/3 RET TOSTADA',24,'unit','caja'],cruz1904:['Carballo','CRUZCAMPO 1904 BR CAJA 24 × 33 CL',24,'unit','caja'],heineken00:['Carballo','HEINEKEN 0,0% 1/3 RET',24,'unit','caja'],corona:['Tardio','CORONA LOOSE 35,5 CL × 24',24,'unit','caja'],alcazar:['Carballo','EL ALCAZAR 1/3 S/R C12',12,'unit','caja'],leffe:['Tardio','LEFFE TRIPLE 24 BOT. 1/3',24,'unit','caja'],aguila:['Carballo','EL AGUILA BR CAJA 24X33CL ES 2025',24,'unit','caja'],desperados:['Carballo','DESPERADOS BR CAJA 24X33CL ES',24,'unit','caja'],moretti:['Carballo','BIRRA MORETTI 1/3 NR',24,'unit','caja'],alhambraRoja:['Tardio','ALHAMBRA RESERVA ROJA 1/3 NR',24,'unit','caja'],judas:['Carballo','JUDAS 1/3 12 NR',12,'unit','caja'],ambar00:['Sánchez Montero','ÁMBAR 0,0 TOSTADA 1/3 RET. 24 BOT.',24,'unit','caja'],ambarRadler:['Sánchez Montero','ÁMBAR RADLER 1/3 RET. 24 BOT.',24,'unit','caja'],ambar:['Sánchez Montero','ÁMBAR ESPECIAL LN 1/3 RET. 24 BOT.',24,'unit','caja'],bud:['Tardio','BUDWEISER 0,33 × 24',24,'unit','caja'],
     deliriumRed:['Bierwinkel','DELIRIUM RED 33 CL',1,'unit','botella'],delirium:['Bierwinkel','DELIRIUM TREMENS 33 CL',1,'unit','botella'],gulden:['Bierwinkel','GULDEN DRAAK 33 CL',1,'unit','botella'],guldenFire:['Bierwinkel','GULDEN DRAAK FIRE 33 CL',1,'unit','botella'],guldenStout:['Bierwinkel','GULDEN DRAAK IMPERIAL STOUT 33 CL',1,'unit','botella'],guldenSmoked:['Bierwinkel','GULDEN DRAAK SMOKED 33 CL',1,'unit','botella'],magnersBerry:['Bierwinkel','MAGNERS SIDRA BERRY 56,8 CL',1,'unit','botella'],magnersApple:['Bierwinkel','MAGNERS SIDRA MANZANA 56,8 CL',1,'unit','botella'],magnersPear:['Bierwinkel','MAGNERS SIDRA PEAR 56,8 CL',1,'unit','botella'],chimay:['Bierwinkel','CHIMAY 150 33 CL',1,'unit','botella'],
-    coke:['Coca-Cola','COCA-COLA VR 237 ML × 24',5688,'ml','caja'],cokeZero:['Coca-Cola','COCA-COLA ZERO VR 237 ML × 24',5688,'ml','caja'],cokeZeroZero:['Coca-Cola','COCA-COLA ZERO ZERO VR 237 ML × 24',5688,'ml','caja'],cokeLight:['Coca-Cola','COCA-COLA LIGHT VR 237 ML × 24',5688,'ml','caja'],fantaOrange:['Coca-Cola','FANTA NARANJA VR 237 ML × 24',5688,'ml','caja'],fantaLemon:['Coca-Cola','FANTA LIMÓN VR 237 ML × 24',5688,'ml','caja'],sprite:['Coca-Cola','SPRITE VR 200 ML × 24',4800,'ml','caja'],aquarius:['Coca-Cola','AQUARIUS VR 300 ML × 24',7200,'ml','caja'],aquariusOrange:['Coca-Cola','AQUARIUS NARANJA VR 300 ML × 24',7200,'ml','caja'],water:['Coca-Cola','AQUABONA PET 350 ML × 24',8400,'ml','caja'],royalYuzu:['Coca-Cola','ROYAL BLISS SIGNATURE TONIC 200 ML × 24',4800,'ml','caja'],royalOrange:['Coca-Cola','ROYAL BLISS NARANJA 200 ML × 24',4800,'ml','caja'],royalLemon:['Coca-Cola','ROYAL BLISS LEMON MIXER 200 ML × 24',4800,'ml','caja'],royalBerry:['Coca-Cola','ROYAL BLISS AROMATIC BERRY 200 ML × 24',4800,'ml','caja'],monster:['Coca-Cola','MONSTER ENERGY 250 ML × 24',6000,'ml','caja'],tonic:['Schweppes','SCHWEPPES TÓNICA RET. 28 × 200 ML',5600,'ml','caja'],tonicZero:['Schweppes','SCHWEPPES TÓNICA ZERO RET. 28 × 20 CL',5600,'ml','caja'],limeTonic:['Schweppes','SCHWEPPES SELECTION TÓNICA TOQUE DE LIMA 24 × 20 CL',4800,'ml','caja'],soda:['Schweppes','SCHWEPPES SODA RET. 28 × 200 ML',5600,'ml','caja'],wildBerry:['Schweppes','SCHWEPPES WILD BERRY RET. 28 × 20 CL',5600,'ml','caja'],grapefruit:['Schweppes','SCHWEPPES POMELO RET. 28 × 200 ML',5600,'ml','caja'],premiumGrapefruit:['Schweppes','SCHWEPPES SELECTION POMELO 12 × 20 CL',2400,'ml','caja'],premiumLemon:['Schweppes','SCHWEPPES SELECTION LIMÓN 12 × 20 CL',2400,'ml','caja'],premiumOrange:['Schweppes','SCHWEPPES SELECTION NARANJA 12 × 20 CL',2400,'ml','caja'],gingerBeer:['Schweppes','SCHWEPPES SELECTION GINGER BEER 12 × 20 CL',2400,'ml','caja'],sevenUp:['Schweppes','SEVEN UP FREE RET. 24 × 200 ML',4800,'ml','caja'],casera:['Schweppes','LA CASERA GASEOSA 1 L × 12',12000,'ml','caja'],trinaOrange:['Schweppes','TRINA NARANJA LOW CAL RET. 24 U',4800,'ml','caja'],trinaLemon:['Schweppes','TRINA LIMÓN LOW CAL RET. 24 × 275 ML',6600,'ml','caja'],orangeJuice:['Schweppes','VIDA NARANJA BATUKA 200 ML × 24',4800,'ml','caja'],pineappleJuice:['Schweppes','VIDA PIÑA BATUKA 200 ML × 24',4800,'ml','caja'],peachJuice:['Schweppes','VIDA MELOCOTÓN BATUKA 200 ML × 24',4800,'ml','caja'],tomatoJuice:['Schweppes','VIDA TOMATE BATUKA 200 ML × 24',4800,'ml','caja'],nesteaPassion:['Barrero','NESTEA TE VERDE MARACUYA 1/3 CRISTAL X 24',7920,'ml','caja'],nestea:['Barrero','NESTEA LIMON 1/3 CRISTAL X 24',7920,'ml','caja'],nesteaZero:['Barrero','NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X 24',7920,'ml','caja'],pedras:['Barrero','AGUA C/ GAS PEDRAS VID250 X 24',6000,'ml','caja'],feverRaspberry:['Barrero','FEVERTREE RASPBERRY 20CL X 24',4800,'ml','caja'],feverIndian:['Barrero','FEVERTREE INDIAN TONIC',4800,'ml','caja'],redBull:['Inbraex','RED BULL ENERGY DRINK 24 × 250 ML',6000,'ml','caja'],
+    coke:['Coca-Cola','COCA-COLA VR 237 ML × 24',24,'unit','caja'],cokeZero:['Coca-Cola','COCA-COLA ZERO VR 237 ML × 24',24,'unit','caja'],cokeZeroZero:['Coca-Cola','COCA-COLA ZERO ZERO VR 237 ML × 24',24,'unit','caja'],cokeLight:['Coca-Cola','COCA-COLA LIGHT VR 237 ML × 24',24,'unit','caja'],fantaOrange:['Coca-Cola','FANTA NARANJA VR 237 ML × 24',24,'unit','caja'],fantaLemon:['Coca-Cola','FANTA LIMÓN VR 237 ML × 24',24,'unit','caja'],sprite:['Coca-Cola','SPRITE VR 200 ML × 24',24,'unit','caja'],aquarius:['Coca-Cola','AQUARIUS VR 300 ML × 24',24,'unit','caja'],aquariusOrange:['Coca-Cola','AQUARIUS NARANJA VR 300 ML × 24',24,'unit','caja'],water:['Coca-Cola','AQUABONA PET 350 ML × 24',24,'unit','caja'],royalYuzu:['Coca-Cola','ROYAL BLISS SIGNATURE TONIC 200 ML × 24',24,'unit','caja'],royalOrange:['Coca-Cola','ROYAL BLISS NARANJA 200 ML × 24',24,'unit','caja'],royalLemon:['Coca-Cola','ROYAL BLISS LEMON MIXER 200 ML × 24',24,'unit','caja'],royalBerry:['Coca-Cola','ROYAL BLISS AROMATIC BERRY 200 ML × 24',24,'unit','caja'],monster:['Coca-Cola','MONSTER ENERGY 250 ML × 24',24,'unit','caja'],tonic:['Schweppes','SCHWEPPES TÓNICA RET. 28 × 200 ML',28,'unit','caja'],tonicZero:['Schweppes','SCHWEPPES TÓNICA ZERO RET. 28 × 20 CL',28,'unit','caja'],limeTonic:['Schweppes','SCHWEPPES SELECTION TÓNICA TOQUE DE LIMA 24 × 20 CL',24,'unit','caja'],soda:['Schweppes','SCHWEPPES SODA RET. 28 × 200 ML',28,'unit','caja'],wildBerry:['Schweppes','SCHWEPPES WILD BERRY RET. 28 × 20 CL',28,'unit','caja'],grapefruit:['Schweppes','SCHWEPPES POMELO RET. 28 × 200 ML',28,'unit','caja'],premiumGrapefruit:['Schweppes','SCHWEPPES SELECTION POMELO 12 × 20 CL',12,'unit','caja'],premiumLemon:['Schweppes','SCHWEPPES SELECTION LIMÓN 12 × 20 CL',12,'unit','caja'],premiumOrange:['Schweppes','SCHWEPPES SELECTION NARANJA 12 × 20 CL',12,'unit','caja'],gingerBeer:['Schweppes','SCHWEPPES SELECTION GINGER BEER 12 × 20 CL',12,'unit','caja'],gingerAle:['Schweppes','SCHWEPPES GINGER LOW CAL RET. 28 × 200 ML',28,'unit','caja'],sevenUp:['Schweppes','SEVEN UP FREE RET. 24 × 200 ML',24,'unit','caja'],casera:['Schweppes','LA CASERA GASEOSA 1 L × 12',12,'unit','caja'],trinaOrange:['Schweppes','TRINA NARANJA LOW CAL RET. 24 U',24,'unit','caja'],trinaLemon:['Schweppes','TRINA LIMÓN LOW CAL RET. 24 × 275 ML',24,'unit','caja'],orangeJuice:['Schweppes','VIDA NARANJA BATUKA 200 ML × 24',24,'unit','caja'],pineappleJuice:['Schweppes','VIDA PIÑA BATUKA 200 ML × 24',24,'unit','caja'],peachJuice:['Schweppes','VIDA MELOCOTÓN BATUKA 200 ML × 24',24,'unit','caja'],tomatoJuice:['Schweppes','VIDA TOMATE BATUKA 200 ML × 24',24,'unit','caja'],nesteaPassion:['Barrero','NESTEA TE VERDE MARACUYA 1/3 CRISTAL X 24',24,'unit','caja'],nestea:['Barrero','NESTEA LIMON 1/3 CRISTAL X 24',24,'unit','caja'],nesteaZero:['Barrero','NESTEA SIN AZUCAR LIMON 1/3 CRISTAL X 24',24,'unit','caja'],pedras:['Barrero','AGUA C/ GAS PEDRAS VID250 X 24',24,'unit','caja'],pedrasLemon:['Barrero','AGUA C/ GAS PEDRAS LIMÓN VID250 X 24',24,'unit','caja'],feverRaspberry:['Barrero','FEVERTREE RASPBERRY 20CL X 24',24,'unit','caja'],feverIndian:['Barrero','FEVERTREE INDIAN TONIC',24,'unit','caja'],redBull:['Inbraex','RED BULL ENERGY DRINK 24 × 250 ML',24,'unit','caja'],
     beefeater:['Carballo','BEFFEATER 0.70',700,'ml','botella'],seagrams:['Carballo',"GIN SEAGRAM'S 0.70CL",700,'ml','botella'],martinMiller:['Barrero','GIN MARTIN MILLERS 70CL X 6',700,'ml','botella'],tanqueray:['Carballo','GINEBRA TANQUERAY 0.70 L',700,'ml','botella'],larios:['Carballo','GIN LARIOS 0.70',700,'ml','botella'],bombay:['Carballo','G.BOMBAY SAPPHIRE 0.70',700,'ml','botella'],beefeaterBlack:['Carballo','BEEFEATER BLACK 0.70',700,'ml','botella'],bulldog:['Dyexco','GINEBRA BULLDOG 70 CL',700,'ml','botella'],larios12:['Carballo','LARIOS 12 0.70',700,'ml','botella'],roku:['Carballo','ROKU GIN SELECT EDITION 0.70',700,'ml','botella'],hendricks:['Dyexco',"GIN HENDRICK'S 70 CL",700,'ml','botella'],nordes:['Carballo','GIN NORDES 0.70',700,'ml','botella'],gvine:['Carballo','GIN GVINE FLORAISON 0.70',700,'ml','botella'],gin1890:['Barrero','EXOTICA GIN 1890 6/70CL',700,'ml','botella'],brockmans:['Carballo','GIN BROCKSMANS 0.70',700,'ml','botella'],ampersandPink:['Carballo','AMPERSAND PINK 0.7',700,'ml','botella'],puertoFresa:['Carballo','PUERTO DE INDIAS FRESA 0.70',700,'ml','botella'],macaronesian:['Dyexco','MACARONESIA WHITE GIN 70 CL',700,'ml','botella'],
     barcelo:['Dyexco','RON BARCELÓ AÑEJO 70 CL',700,'ml','botella'],barceloImperial:['Dyexco','RON BARCELÓ IMPERIAL',700,'ml','botella'],brugal:['Carballo','RON BRUGAL AÑEJO 0.70',700,'ml','botella'],santaTeresa:['Carballo','STA TERESA G.RESERVA 0.70',700,'ml','botella'],havanaOrigen:['Carballo','HAVANA ORIGEN 0,70 CL',700,'ml','botella'],havana7:['Carballo','HAVANA 7 0.70',700,'ml','botella'],bacardi:['Carballo','BACARDI C.BLANCA 1L',1000,'ml','botella'],legendario:['Tardio','RON LEGENDARIO ELIXIR 7 AÑOS 70 CL',700,'ml','botella'],bumbu:['Carballo','BUMBU ORIGINAL 0.70CL',700,'ml','botella'],zacapa:['Carballo','ZACAPA CENT 23Y 70CL',700,'ml','botella'],
     absolut:['Carballo','VODKA ABSOLUT 0.70',700,'ml','botella'],greyGoose:['Carballo','GREY GOOSE ORIGINAL 0.70',700,'ml','botella'],khor:['Barrero','VODKA KHOR PLATINUM 70CL X 6',700,'ml','botella'],
@@ -190,18 +229,131 @@
     pureeCoco:['Inbraex','PURÉ COCO MONIN 1 L',1000,'ml','botella'],pureePineapple:['Inbraex','PURÉ PIÑA MONIN 1 L',1000,'ml','botella'],pureePassion:['Inbraex','PURÉ FRUTAS DE LA PASIÓN MONIN 1 L',1000,'ml','botella'],pureeMango:['Inbraex','PURÉ MANGO MONIN 1 L',1000,'ml','botella'],pureeStrawberry:['Inbraex','PURÉ FRESA MONIN 1 L',1000,'ml','botella'],pureeForest:['Inbraex','PURÉ FRUTOS ROJOS MONIN 1 L',1000,'ml','botella'],pureeBanana:['Inbraex','PURÉ PLÁTANO MONIN 1 L',1000,'ml','botella'],pureeApple:['Inbraex','PURÉ MANZANA VERDE MONIN 1 L',1000,'ml','botella'],pureeRaspberry:['Inbraex','PURÉ FRAMBUESA MONIN 1 L',1000,'ml','botella'],pureeRhubarb:['Inbraex','PURÉ RHUBARB MONIN 1 L',1000,'ml','botella'],pureePeach:['Inbraex','PURÉ MELOCOTÓN MONIN 1 L',1000,'ml','botella'],rumSyrup:['Inbraex','SIROPE RON CARIBBEAN MONIN 70 CL',700,'ml','botella'],orgeat:['Inbraex','SIROPE ALMENDRA MONIN 70 CL',700,'ml','botella'],spicy:['Inbraex','SIROPE SPICY MONIN 70 CL',700,'ml','botella'],gingerSyrup:['Inbraex','SIROPE GINGER (JENGIBRE) MONIN 70 CL',700,'ml','botella'],mangoSpicy:['Inbraex','SIROPE MANGO SPICY MONIN 70 CL',700,'ml','botella'],grapefruitSyrup:['Inbraex','SIROPE POMELO ROSA MONIN 70 CL',700,'ml','botella'],coldBrew:['Inbraex','SIROPE CAFÉ COLD BREW MONIN 70 CL',700,'ml','botella']
   };
 
+  Object.assign(AUTO_ITEMS,{
+    beer1906:['Montanera de la Dehesa','EG 1906 33 CL RETORNABLE × 24',24,'unit','caja'],
+    beer1906Red:['Montanera de la Dehesa','1906 RED VINTAGE 33 CL × 24 RET.',24,'unit','caja'],
+    rivera:['Montanera de la Dehesa','EG RIVERA REPOSADA 33 CL × 24',24,'unit','caja'],
+    stella:['Tardio','STELLA ARTOIS NR 24 × 0,33 L',24,'unit','caja'],
+    salobrena:['Carballo','SALOBREÑA TINTO BENJAMIN 24U',24,'unit','caja'],
+    cruzSinGluten:['Carballo','CC SIN GLUTEN 1/3 S/R',24,'unit','caja'],
+    mortSubite:['Carballo','MORT SUBITE KRIEK LMABIC',12,'unit','caja'],
+    chouffeCherry00:['Bierwinkel','LA CHOUFFE CHERRY 0,0 33 CL',1,'unit','botella'],
+    tanqueray0:['Carballo','TANQUERAY 0,0 0.70CL',700,'ml','botella'],
+    ampersand:['Carballo','AMPERSAND GIN 70 CL',700,'ml','botella'],
+    goldGrail:['Barrero','GIN GOLD GRAIL 50 CL × 6',500,'ml','botella'],
+    anisMono:['Carballo','ANÍS DEL MONO DULCE 70 CL',700,'ml','botella'],
+    monkey47:['Carballo','GIN MONKEY 47 0.5',500,'ml','botella'],
+    martiniRosso:['Carballo','MARTINI ROSSO 100CL',1000,'ml','botella'],
+    florCana:['Carballo','FLOR DE CAÑA G.RSVA 0.7',700,'ml','botella'],
+    jackHoney:['Dyexco',"JACK DANIEL'S TENNESSEE HONEY 70 CL",700,'ml','botella'],
+    malibu:['Carballo','MALIBÚ 70 CL',700,'ml','botella'],
+    vodkaCaramelo:['Carballo','VODKA CARAMELO RIVES',700,'ml','botella'],
+    martiniBianco:['Carballo','MARTINI BIANCO 1 L',1000,'ml','botella'],
+    barceloCream:['Dyexco','BARCELÓ CREAM 3/4',750,'ml','botella'],
+    cremaRuavieja:['Carballo','CREMA RUAVIEJA 0.70',700,'ml','botella'],
+    kraken:['Inbraex','RON KRAKEN BLACK SPICED 70 CL',700,'ml','botella'],
+    mombasaStrawberry:['Carballo','GIN MOMBASA STRAWBERRY 70 CL',700,'ml','botella'],
+    obsessionGin:['Carballo','GIN OBSESSION GLAMOROUS 70 CL',700,'ml','botella'],
+    foxtaleMelon:['Barrero','GINEBRA FOXTALE MELON 70CL X 6',700,'ml','botella'],
+    lariosPomelo:['Carballo','GIN LARIOS POMELO 70 CL',700,'ml','botella'],
+    puertoClassic:['Carballo','GIN PUERTO DE INDIAS CLASSIC 70 CL',700,'ml','botella'],
+    starBombay:['Carballo','GIN STAR OF BOMBAY 70 CL',700,'ml','botella'],
+    licorBanana:['Inbraex','LICOR PLÁTANO MONIN 70 CL',700,'ml','botella'],
+    licorBellota:['Inbraex','LICOR DE BELLOTA SABORES EXTREMEÑOS 70 CL',700,'ml','botella'],
+    licorAppleAlcohol:['Carballo','LICOR MANZANA RIVES 70 CL',700,'ml','botella'],
+    licor43:['Carballo','LICOR 43 70 CL',700,'ml','botella'],
+    sheridans:['Carballo','SHERIDANS 0.70',700,'ml','botella'],
+    granadina:['Carballo','GRANADINA RIVES 1 L',1000,'ml','botella'],
+    licorBellotaNA:['Inbraex','LICOR BELLOTA S/A SABORES EXTREMEÑOS 70 CL',700,'ml','botella'],
+    licorAppleNA:['Carballo','L.MANZANA S/A RIVES',700,'ml','botella'],
+    licorMoraNA:['Carballo','L.MORA S/A 0.70',700,'ml','botella'],
+    tequilaCuervo:['Carballo','TEQUILA CUERVO ESPECIAL 0.70',700,'ml','botella'],
+    martiniRubino:['Carballo','MARTINI RUBINO 70 CL',700,'ml','botella'],
+    eristoffBlack:['Carballo','VODKA ERISTOFF BLACK',700,'ml','botella'],
+    tripleSec:['Dyexco','LARANXA TRIPLE SECO 70 CL',700,'ml','botella'],
+    limoncelloVillaMassa:['Barrero','LIMONCELLO VILLA MASSA 70CL X 6',700,'ml','botella'],
+    makersMark:['Carballo','MAKER’S MARK 70 CL',700,'ml','botella'],
+    sohoSpritz:['Carballo','SOHO FINO SPRITZ ROSÉ 70 CL',700,'ml','botella'],
+    bacardiSpiced:['Carballo','BACARDI SPICED 0.70 CL',700,'ml','botella'],
+    puertoBlackberry:['Carballo','GIN PUERTO DE INDIAS BLACKBERRY 70 CL',700,'ml','botella'],
+    limaRives:['Carballo','LIMA RIVES 70 CL',700,'ml','botella'],
+    pampero:['Carballo','RON PAMPERO AÑEJO 70 CL',700,'ml','botella'],
+    beefeaterPinkLight:['Carballo','BEEFEATER PINK LIGHT 70 CL',700,'ml','botella'],
+    seagrams0:['Carballo',"GIN SEAGRAM'S 0,0 70 CL",700,'ml','botella'],
+    safari:['Carballo','LICOR SAFARI 70 CL',700,'ml','botella'],
+    petroniRojo:['Carballo','PETRONI VERMU ROJO 1L',1000,'ml','botella'],
+    citadelle:['Carballo','GIN CITADELLE 70 CL',700,'ml','botella'],
+    arehucas:['Montanera de la Dehesa','RON AREHUCAS CARTA ORO 70 CL',700,'ml','botella'],
+    yellowRose:['Carballo','YELLOW ROSE PREMIUM AMERICAN WHISKEY 70 CL',700,'ml','botella'],
+    chouffe0:['Bierwinkel','LA CHOUFFE 0,0 33 CL',1,'unit','botella'],
+    patronSilver:['Carballo','TEQUILA PATRÓN SILVER 70 CL',700,'ml','botella'],
+    cremaAmarguinha:['Barrero','CREMA AMARGUINHA 70CL X 6',700,'ml','botella'],
+    puertoGuadalquivir:['Carballo','GIN PUERTO DE INDIAS GUADALQUIVIR 70 CL',700,'ml','botella'],
+    puertoPureBlack:['Carballo','GIN PUERTO DE INDIAS PURE BLACK 70 CL',700,'ml','botella'],
+    cremaAmarguinhaCaramelo:['Barrero','CREMA CARAMELO AMARGUINHA 70CL X 6',700,'ml','botella'],
+    barceloPorto:['Dyexco','RON BARCELÓ IMPERIAL PORTO CASK 70 CL',700,'ml','botella'],
+    donJulio70:['Carballo','TEQUILA DON JULIO 70 70 CL',700,'ml','botella'],
+    yzaguirreBlanco:['Dyexco','VERMOUTH YZAGUIRRE BLANCO 1 L',1000,'ml','botella']
+  });
+
   const exactMap=(source)=>Object.fromEntries(Object.entries(source).map(([name,value])=>[normalize(name),value]));
   const DRAFT_RULES=exactMap({'GUINNESS':'guinness','PAULANER ORIGINAL MÜNCHNER':'paulanerOriginal','PAULANER HEFE-WEISSBIER':'paulanerTrigo',"MURPHY’S IRISH RED":'murphys','AFFLIGEM DOUBLE':'affligem','LAGUNITAS IPA':'lagunitas','CRUZCAMPO GRAN RESERVA':'cruzReserva','HOP HOUSE 13 BY GUINNESS':'hopHouse'});
   const UNIT_SALES=exactMap({'MAHOU 5 ESTRELLAS':'mahou','18/70':'estrella1870','CRUZCAMPO PILSEN':'cruzcampo','TINTO DE VERANO':'tinto','ALHAMBRA RESERVA 1925':'alhambra1925','LADRÓN DE MANZANAS':'ladron','AMSTEL ORIGINAL':'amstel','MAHOU 00 TOSTADA':'mahou00','ÁGUILA SIN FILTRAR':'aguilaSin','CRUZCAMPO RADLER':'cruzRadler','HEINEKEN':'heineken','AMSTEL ORO 00 TOSTADA':'amstel00','CRUZCAMPO 1904':'cruz1904','HEINEKEN 00':'heineken00','CORONA':'corona','EL ALCÁZAR':'alcazar','LEFFE TRIPLE':'leffe','ÁGUILA ESPECIAL':'aguila','DESPERADOS':'desperados','BIRRA MORETTI':'moretti','ALHAMBRA RESERVA ROJA':'alhambraRoja','JUDAS':'judas','ÁMBAR 000 TOSTADA':'ambar00','ÁMBAR RADLER':'ambarRadler','ÁMBAR ESPECIAL':'ambar','BUDWEISER':'bud','DELÍRIUM RED':'deliriumRed','DELÍRIUM TREMENS':'delirium','GULDEN DRAAK CLASSIC':'gulden','GULDEN DRAAK FIRE':'guldenFire','GULDEN DRAAK IMPERIAL STOUT':'guldenStout','GULDEN DRAAK SMOKED':'guldenSmoked','MAGNERS BERRY':'magnersBerry','MAGNERS ORIGINAL 568 cl':'magnersApple','MAGNERS PEAR':'magnersPear','CHIMAY JAUNE':'chimay'});
   const DRINK_SALES=exactMap({'COCA-COLA':'coke','COCA-COLA ZERO':'cokeZero','COCA-COLA ZERO-ZERO':'cokeZeroZero','COCA-COLA LIGHT':'cokeLight','FANTA NARANJA':'fantaOrange','FANTA LIMÓN':'fantaLemon','SPRITE':'sprite','AQUARIUS':'aquarius','AQUARIUS NARANJA':'aquariusOrange','AGUA':'water','ROYAL BLISS YUZU TONIC WATER':'royalYuzu','ROYAL BLISS NARANJA':'royalOrange','ROYAL BLISS LIMÓN':'royalLemon','ROYAL BLISS BERRY':'royalBerry','MONSTER 250ml':'monster','TÓNICA SCHWEPPES':'tonic','TÓNICA SCHWEPPES ZERO':'tonicZero','TÓNICA SCHWEPPES PREMIUM':'limeTonic','TÓNICA SCHWEPPES WILD BERRY':'wildBerry','POMELO SCHWEPPES':'grapefruit','POMELO SCHWEPPES SELECTION':'premiumGrapefruit','LIMÓN PREMIUM SCHWEPPES':'premiumLemon','NARANJA PREMIUM SCHWEPPES':'premiumOrange','GINGER BEER SCHWEPPES':'gingerBeer','7 UP ZERO':'sevenUp','TRINA NARANJA':'trinaOrange','TRINA LIMÓN':'trinaLemon','ZUMO NARANJA':'orangeJuice','ZUMO PIÑA':'pineappleJuice','ZUMO MELOCOTÓN':'peachJuice','ZUMO TOMATE':'tomatoJuice','NESTEA MARACUYÁ':'nesteaPassion','NESTEA LIMÓN':'nestea','NESTEA LIMON SIN AZUCAR':'nesteaZero','AGUA CON GAS PEDRAS SALGADAS':'pedras','FEVER-TREE RASPBERRY & RHUBARB TONIC':'feverRaspberry','FEVER-TREE INDIAN TONIC':'feverIndian'});
   const SPIRIT_SALES=exactMap({'Barcelo Añejo':'barcelo','Barceló Imperial':'barceloImperial','Brugal Añejo':'brugal','Santa Teresa Añejo Gran Reserva':'santaTeresa','HAVANA CLUB AÑEJO ORIGEN':'havanaOrigen','Havana Club 7 Años':'havana7','Bacardí (CARTA BLANCA)':'bacardi','Legendario Elixir de Cuba':'legendario','BUMBU ORIGINAL':'bumbu','Zacapa Centenario Solera 23':'zacapa','ABSOLUT':'absolut','GREY GOOSE':'greyGoose','Beefeater':'beefeater','Seagrams Gin':'seagrams','Martin Millers Gin':'martinMiller','Tanqueray':'tanqueray','Larios Mediterranean Gin':'larios','Bombay Sapphire':'bombay','BEEFEATER BLACK':'beefeaterBlack','Bulldog':'bulldog','Larios 12':'larios12','Roku Gin':'roku','Hendricks':'hendricks','Nordés':'nordes','Gvine Floraison':'gvine','GIN 1890 EXÓTICA':'gin1890','Brockmans Gin':'brockmans','Ampersand Strawberry':'ampersandPink','Puerto de Indias Strawberry':'puertoFresa','MACARONESIAN WHITE GIN':'macaronesian','Johnnie Walker Red Label':'redLabel','JB':'jb','Cutty Sark':'cutty','Ballantine’s':'ballantines','Johnnie Walker Black Label':'blackLabel','BALLANTINE’S 10 (AMERICAN BARREL)':'ballantines10','Johnnie Walker Double Black':'doubleBlack','Dewars White Label':'dewar','DYC':'dyc','Jameson':'jameson','Connemara Original Tubed (AHUMADO)':'connemara','Four Roses':'fourRoses','Jack Daniel’s Old N7':'jack','JACK DANIEL’S APPLE':'jackApple','Jack Daniel’s Fire':'jackFire','Jack Daniel’s Gentleman Jack':'gentleman','AMARGUINHA':'amarguinha','BEIRAO':'beirao','BAILEYS ORIGINAL':'baileys','AMARETTO DISARONNO':'amaretto','LICOR HIERBAS RUAVIEJA':'ruavieja','FRANGELICO':'frangelico','JÄGERMEISTER':'jager','APEROL':'aperol','CAMPARI':'campari'});
-  const MIXER_RULES=exactMap({'COCA-COLA':'coke','COCA-COLA ZERO':'cokeZero','COCA-COLA ZERO-ZERO':'cokeZeroZero','COCA-COLA LIGHT':'cokeLight','FANTA NARANJA':'fantaOrange','FANTA LIMÓN':'fantaLemon','SPRITE':'sprite','7 UP':'sevenUp','ROYAL BLISS LIMÓN':'royalLemon','ROYAL BLISS NARANJA':'royalOrange','ROYAL BLISS BERRY':'royalBerry','ROYAL BLISS YUZU TONIC WATER':'royalYuzu','TÓNICA SCHWEPPES ORIGINAL':'tonic','TÓNICA SCHWEPPES ZERO':'tonicZero','TÓNICA SCHWEPPES SELECTION TOQUE DE LIMA':'limeTonic','SCHWEPPES LIMÓN PREMIUM':'premiumLemon','SCHWEPPES NARANJA PREMIUM':'premiumOrange','WILD BERRY SCHWEPPES':'wildBerry','GINGER BEER SCHWEPPES SELECTION':'gingerBeer','GINGER ALE SCHWEPPES':'gingerBeer','FEVER-TREE INDIAN TONIC':'feverIndian','FEVER-TREE RASPERRY & RHUBARB':'feverRaspberry','RED BULL':'redBull','ZUMO NARANJA':'orangeJuice','ZUMO PIÑA':'pineappleJuice','AGUA':'water','HIELO & BOTELLA AGUA':'water'});
-  const MIXER_BOTTLE_ML={coke:237,cokeZero:237,cokeZeroZero:237,cokeLight:237,fantaOrange:237,fantaLemon:237,sprite:200,sevenUp:200,royalLemon:200,royalOrange:200,royalBerry:200,royalYuzu:200,tonic:200,tonicZero:200,limeTonic:200,premiumLemon:200,premiumOrange:200,wildBerry:200,gingerBeer:200,feverIndian:200,feverRaspberry:200,redBull:250,orangeJuice:200,pineappleJuice:200,water:350};
+  Object.assign(UNIT_SALES,exactMap({
+    '1906':'beer1906','STELLA ARTROIS':'stella','SALOBREÑA':'salobrena','CRUZCAMPO SIN GLUTEN':'cruzSinGluten',
+    'MORT SUBITE KRIEK':'mortSubite','1906 RED VINTAGE':'beer1906Red','LA CHOUFFE CHERRY 00':'chouffeCherry00','RIVERA REPOSADA':'rivera'
+  }));
+  Object.assign(DRINK_SALES,exactMap({
+    'AGUA CON GAS PEDRAS SALGADAS LIMON':'pedrasLemon','NESTEA LIMON  SIN AZUCAR':'nesteaZero',
+    'RED BULL':'redBull','GINGER ALE SCHWEPPES':'gingerAle'
+  }));
+  Object.assign(SPIRIT_SALES,exactMap({
+    'Tanqueray 0.0':'tanqueray0','Ampersand':'ampersand','Gold Grail':'goldGrail','MONO DULCE':'anisMono',
+    'Moneky 47':'monkey47','MARTINI ROSSO':'martiniRosso','Flor de Caña 5 Años':'florCana',
+    'JACK DANIEL’S HONEY':'jackHoney','Malibú':'malibu','VODKA CARAMELO RIVES':'vodkaCaramelo',
+    'MARTINI BIANCO':'martiniBianco','BARCELÓ CREAM':'barceloCream','CREMA RUAVIEJA':'cremaRuavieja',
+    'Kraken Black Spiced':'kraken','Mombasa Club Strawberry Edition':'mombasaStrawberry',
+    'Obsession Glamorous Gin':'obsessionGin','THE FOXTALE GIN & MELON':'foxtaleMelon','LARIOS POMELO':'lariosPomelo',
+    'Puerto de Indias Classic':'puertoClassic','Star Of Bombay':'starBombay','LICOR BANANA':'licorBanana',
+    'LICOR BELLOTA':'licorBellota','LICOR MANZANA ALCOHOL':'licorAppleAlcohol','LICOR 43':'licor43',
+    'SHERIDANS':'sheridans','GRANADINA RIVES':'granadina','LICOR BELLOTA SIN ALCOHOL':'licorBellotaNA',
+    'LICOR MANZANA SIN ALCOHOL':'licorAppleNA','LICOR MORA SIN ALCOHOL':'licorMoraNA',
+    'JOSÉ CUERVO ESPECIAL':'tequilaCuervo','MARTINI RUBINO':'martiniRubino','ERISTOFF BLACK':'eristoffBlack'
+  }));
+  Object.assign(UNIT_SALES,exactMap({'LA CHOUFFE 00 SIN ALCOHOL':'chouffe0'}));
+  Object.assign(SPIRIT_SALES,exactMap({
+    'PUERTO DE INDIAS BLACKBERRY':'puertoBlackberry','LIMA RIVES':'limaRives','Pampero Añejo':'pampero',
+    'BEEFEATER PINK LIGHT':'beefeaterPinkLight','Seagrams 00':'seagrams0','SAFARI':'safari','PETRONI ROJO':'petroniRojo',
+    'Citadelle':'citadelle','VILLA MASSA':'limoncelloVillaMassa','Arehucas':'arehucas',
+    'Yellow Rose Premium American Whiskey':'yellowRose','CREMA AMARGUINHA':'cremaAmarguinha',
+    'Puerto de Indias Guadalquivir':'puertoGuadalquivir','Puerto de Indias Pure Black Edition':'puertoPureBlack',
+    'LICOR COCO':'licorCoco','CREMA AMARGUINHA CARAMELO':'cremaAmarguinhaCaramelo',
+    'BARCELO IMPERIAL PORTO CASK':'barceloPorto','DON JULIO 70':'donJulio70','YZAGUIRRE BLANCO':'yzaguirreBlanco'
+  }));
+  const MIXER_RULES=exactMap({'COCA-COLA':'coke','COCA-COLA ZERO':'cokeZero','COCA-COLA ZERO-ZERO':'cokeZeroZero','COCA-COLA LIGHT':'cokeLight','FANTA NARANJA':'fantaOrange','FANTA LIMÓN':'fantaLemon','SPRITE':'sprite','7 UP':'sevenUp','ROYAL BLISS LIMÓN':'royalLemon','ROYAL BLISS NARANJA':'royalOrange','ROYAL BLISS BERRY':'royalBerry','ROYAL BLISS YUZU TONIC WATER':'royalYuzu','TÓNICA SCHWEPPES ORIGINAL':'tonic','TÓNICA SCHWEPPES ZERO':'tonicZero','TÓNICA SCHWEPPES SELECTION TOQUE DE LIMA':'limeTonic','SCHWEPPES LIMÓN PREMIUM':'premiumLemon','SCHWEPPES NARANJA PREMIUM':'premiumOrange','WILD BERRY SCHWEPPES':'wildBerry','GINGER BEER SCHWEPPES SELECTION':'gingerBeer','GINGER ALE SCHWEPPES':'gingerAle','FEVER-TREE INDIAN TONIC':'feverIndian','FEVER-TREE RASPERRY & RHUBARB':'feverRaspberry','RED BULL':'redBull','ZUMO NARANJA':'orangeJuice','ZUMO PIÑA':'pineappleJuice','AGUA':'water','HIELO & BOTELLA AGUA':'water'});
+  const MIXER_BOTTLE_ML={coke:237,cokeZero:237,cokeZeroZero:237,cokeLight:237,fantaOrange:237,fantaLemon:237,sprite:200,sevenUp:200,royalLemon:200,royalOrange:200,royalBerry:200,royalYuzu:200,tonic:200,tonicZero:200,limeTonic:200,premiumLemon:200,premiumOrange:200,wildBerry:200,gingerBeer:200,gingerAle:200,feverIndian:200,feverRaspberry:200,redBull:250,orangeJuice:200,pineappleJuice:200,peachJuice:200,tomatoJuice:200,water:350,soda:200,casera:1000};
   const FLAVOURS=exactMap({'Coco':'pureeCoco','Piña':'pureePineapple','Fruta de la pasión':'pureePassion','Fruta de la pasion':'pureePassion','Mango':'pureeMango','Fresa':'pureeStrawberry','Fruta del bosque':'pureeForest','Banana':'pureeBanana','Plátano':'pureeBanana','Manzana':'pureeApple','Frambuesa':'pureeRaspberry','Melocotón':'pureePeach'});
   const COCKTAILS=exactMap({
     'APEROL SPRITZ':{aperol:90,prosecco:125,soda:40},'BABILONIA':{cachaca:50,grapefruitSyrup:15,pureePassion:30},'BANANA ORANGE':{licorBanana:50,pureeBanana:20,orangeJuice:120,khor:25},'BLOODY MARY':{khor:50,tomatoJuice:200},'BLUE PEACH LEMONADE':{licorPeach:60,blueCuracao:15,sevenUp:100},'CAIPIRINHA':{cachaca:60,casera:100},'CAIPIROSKA':{khor:60,casera:100},'CHANDON GARDEN SPRITZ':{chandon:200},'COCO LOCO':{licorCoco:50,pureeCoco:20,pineappleJuice:120},'DAIQUIRI FROZEN FRUTAL':{bacardi:60,$flavour:30},'DAIQUIRI PINEAPPLE':{havanaOrigen:60,pureePineapple:30},'DOUBLE APPLE':{dewar:50,pureeApple:15},'ELECTRIC LEMONADE':{khor:50,blueCuracao:25,sevenUp:100},'ESPRESSO MARTINI':{kahlua:30,khor:50},'HUGO TROPICAL':{pureePassion:25,prosecco:200,soda:40},'MANGO MEZCAL':{mezcal:50,mangoSpicy:20},'MARGARITA MANGO SPICY':{beirao:20,mangoSpicy:25,pureeMango:15,spicy:10},'MARTINI PORN STAR':{pureePassion:30,prosecco:50},'MOJITO CLÁSICO':{bacardi:50,casera:100},'MOJITO FRUTAL':{bacardi:50,$flavour:50,casera:100},'MOSCOW MULE':{khor:60,gingerBeer:200},'NEGRONI':{roku:25,campari:25,yzaguirre:25},'PIÑA COLADA':{pineappleJuice:93,pureeCoco:53,pureePineapple:27,rumSyrup:27,brugal:50},'PISCO SOUR':{pisco:60},'SEX ON THE BEACH':{khor:50,licorPeach:25,orangeJuice:100},'TENNESSEE TEA':{jack:50,coke:237},
     'BASILICO VIBRANTE':{martiniVibrante:60,orangeJuice:30,pureeMango:30,gingerBeer:100},'BELLINI SPRITZ':{martiniFloreale:50,pureePeach:25,gingerBeer:100},'SAN FRANCISCO':{orangeJuice:67,peachJuice:67,pineappleJuice:67},'SWEET & SPICY':{pureeRhubarb:60,gingerSyrup:20,spicy:20,gingerBeer:200},'VIRGIN CAPIROSKA FRUTAL':{$flavour:50,casera:100},'VIRGIN DAIQUIRI FROZEN FRUTAL':{rumSyrup:50,$flavour:50},'VIRGIN MOJITO CLASSIC':{rumSyrup:50,casera:100},'VIRGIN MOJITO ITALIANO':{martiniFloreale:50,casera:100},'VIRGIN MOJITO FRUTAL':{$flavour:50,casera:100},'VIRGIN PIÑA COLADA FROZEN':{pineappleJuice:218,pureeCoco:53,pureePineapple:27,rumSyrup:27}
   });
+  Object.assign(COCKTAILS,exactMap({
+    'CAIPIROSKA FRUTAL':{khor:60,casera:100,$flavour:50},
+    'COSMOPOLITAN':{khor:50,tripleSec:21},
+    'DIABLO':{tequilaCuervo:50,gingerBeer:200},
+    'MARGARITA':{tequilaCuervo:60,tripleSec:35},
+    'SOHO FINO SPRITZ ROSE':{sohoSpritz:200},
+    'WHISKY SOUR':{makersMark:60},
+    'VILLA MASSA SPRITZ':{limoncelloVillaMassa:80}
+  }));
+  Object.assign(COCKTAILS,exactMap({
+    'MAI TAI (TRADER VIC 1944)':{bacardiSpiced:25,bacardi:25,havanaOrigen:25,tripleSec:25,orgeat:25},
+    'LA PALOMA PATRÓN':{patronSilver:50,premiumGrapefruit:200}
+  }));
+  COCKTAILS[normalize('BABILONIA (by Antonio Gutierrez)')]=COCKTAILS[normalize('BABILONIA')];
+  const IGNORED_SALES=new Set([normalize('CHUPITO LICOR')]);
 
   Object.assign(AUTO_ITEMS,{
     coffeeRegular:['Cafento','STRAC PROF RED E/96 (CAFÉ ROJO)',96,'unit','caja de 96 cápsulas'],
@@ -215,16 +367,18 @@
     icedBlackberry:['Cafento','ICED TEA MONT MORA',10,'unit','estuche de 10 sobres'],
     icedMojito:['Cafento','ICED TEA MONT VERDE MOJITO',10,'unit','estuche de 10 sobres'],
     icedGuarana:['Cafento','ICED TEA MONT GUARANÁ',10,'unit','estuche de 10 sobres'],
+    icedPear:['Cafento','ICED TEA MONT ROOIBOS PERA',10,'unit','estuche de 10 sobres'],
     kombuchaForest:['Cafento','MONT KOMBUCHA FRUTOS ROJOS',1,'unit','botella'],
     kombuchaLemon:['Cafento','MONT KOMBUCHA LIMÓN',1,'unit','botella'],
     chocolateBlack:['Cafento','MONT N1 CHOCOLATE NEGRO',10,'unit','estuche de 10 sobres'],
     chocolateCream:['Cafento','MONT N5 CHOCOLATE NEGRO NATA',10,'unit','estuche de 10 sobres'],
     chocolateMilk:['Cafento','MONT N7 CHOCOLATE LECHE',10,'unit','estuche de 10 sobres'],
-    chocolateWhite:['Cafento','MONT N17 CHOCOLATE BLANCO',10,'unit','estuche de 10 sobres']
+    chocolateWhite:['Cafento','MONT N17 CHOCOLATE BLANCO',10,'unit','estuche de 10 sobres'],
+    chocolateOrangeCinnamon:['Cafento','MONT CHOCOLATE NEGRO NARANJA Y CANELA',10,'unit','estuche de 10 sobres']
   });
-  const ICED_TEA_SALES=exactMap({'TÉ FRÍO LIMÓN':'icedLemon','TÉ FRÍO MELOCOTÓN':'icedPeach','TÉ FRÍO FRUTAS DEL BOSQUE':'icedForest','TÉ FRÍO PIÑA COLADA':'icedPinaColada','TÉ FRÍO MARACUYÁ':'icedPassion','TÉ FRÍO CEREZA':'icedCherry','TÉ FRÍO MORA':'icedBlackberry','TÉ FRÍO MOJITO':'icedMojito','TÉ FRÍO GUARANÁ':'icedGuarana'});
+  const ICED_TEA_SALES=exactMap({'TÉ FRÍO LIMÓN':'icedLemon','TÉ FRÍO MELOCOTÓN':'icedPeach','TÉ FRÍO FRUTAS DEL BOSQUE':'icedForest','TÉ FRÍO PIÑA COLADA':'icedPinaColada','TÉ FRÍO MARACUYÁ':'icedPassion','TÉ FRÍO CEREZA':'icedCherry','TÉ FRÍO MORA':'icedBlackberry','TÉ FRÍO MOJITO':'icedMojito','TÉ FRÍO GUARANÁ':'icedGuarana','TÉ FRÍO PERA':'icedPear'});
   const KOMBUCHA_SALES=exactMap({'KOMBUCHA FRUTOS DEL BOSQUE':'kombuchaForest','KOMBUCHA LIMÓN Y JENGIBRE':'kombuchaLemon'});
-  const CHOCOLATE_SALES=exactMap({'CHOCOLATE NEGRO':'chocolateBlack','CHOCOLATE NEGRO CON NATA':'chocolateCream','CHOCOLATE CON LECHE':'chocolateMilk','CHOCOLATE BLANCO':'chocolateWhite'});
+  const CHOCOLATE_SALES=exactMap({'CHOCOLATE NEGRO':'chocolateBlack','CHOCOLATE NEGRO CON NATA':'chocolateCream','CHOCOLATE CON LECHE':'chocolateMilk','CHOCOLATE BLANCO':'chocolateWhite','CHOCOLATE NEGRO NARANJA Y CANELA':'chocolateOrangeCinnamon'});
 
   function loadState(){
     try{
@@ -390,13 +544,17 @@
     $('#autoBody').innerHTML=autoFormHTML;$('#autoActions').hidden=true;latestSuggestion=[];
   }
   function formatConsumed(item,amount){
-    if(item[3]==='unit')return `${Math.round(amount)} unidades vendidas`;
+    if(item[3]==='unit')return `${amount.toLocaleString('es-ES',{maximumFractionDigits:2})} unidades necesarias`;
     if(amount>=1000)return `${(amount/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} L calculados`;
     return `${Math.round(amount)} ml calculados`;
   }
   function calculateSuggestion(sales,extras){
-    const totals={},reasons={},unmatched=new Map(),draftDetails={},coffeeDetails={};
+    const totals={},reasons={},unmatched=new Map(),ignored=new Map(),draftDetails={},coffeeDetails={};
     const add=(code,amount,reason)=>{if(!AUTO_ITEMS[code]||!amount)return;totals[code]=(totals[code]||0)+amount;(reasons[code]||(reasons[code]=new Set())).add(reason);};
+    const addRecipe=(code,ml,count,reason)=>{
+      const item=AUTO_ITEMS[code];if(!item||!ml||!count)return;
+      add(code,item[3]==='unit'?count*ml/(MIXER_BOTTLE_ML[code]||ml):count*ml,reason);
+    };
     extras.forEach(row=>{
       const product=normalize(row.producto||''),extra=normalize(row.complemento||''),count=csvNumber(row.cantidad);
       if(extra==='descafeinado'||extra==='doble carga'){
@@ -405,13 +563,14 @@
       }
       const draft=DRAFT_RULES[product];
       if(draft&&(extra==='pinta'||extra==='media pinta')){add(draft,count*(extra==='pinta'?500:330),'Barril');draftDetails[product]=(draftDetails[product]||0)+count;return;}
-      const mixer=MIXER_RULES[extra];if(mixer)add(mixer,count*MIXER_BOTTLE_ML[mixer],'Combinados');
+      const mixer=MIXER_RULES[extra];if(mixer)add(mixer,count,'Combinados');
       const cocktail=COCKTAILS[product],flavour=FLAVOURS[extra];if(cocktail&&cocktail.$flavour&&flavour)add(flavour,count*cocktail.$flavour,'Cócteles');
     });
     const relevantCategories=['cerveza barril','cerveza botella','refrescos','anejo','extra anejo','premium','gin','vodka','whisky','bourbon','especiado','cremas','licores','anis','aperitivo','blanco','tequila','vermut','cocteles','cafes','tes frios','kombucha','chocolate'];
     let salesUnits=0,coveredUnits=0;
     sales.forEach(row=>{
       const productName=row.producto||'',product=normalize(productName),category=normalize(row.categoria||''),count=csvNumber(row.unidades);salesUnits+=count;
+      if(IGNORED_SALES.has(product)){ignored.set(productName,(ignored.get(productName)||0)+count);coveredUnits+=count;return;}
       if(category==='cafes'){
         const detail=coffeeDetails[product]||{decaf:0,double:0},base=product==='solo doble'?2:1,decafServings=Math.min(count,detail.decaf);
         add('coffeeDecaf',decafServings*base,'Cápsulas descafeinadas');
@@ -424,22 +583,23 @@
       const draft=DRAFT_RULES[product];
       if(draft){const missing=Math.max(0,count-(draftDetails[product]||0));if(missing)add(draft,missing*500,'Barril sin tamaño indicado');coveredUnits+=count;return;}
       const unit=UNIT_SALES[product];if(unit){add(unit,count,'Venta directa');coveredUnits+=count;return;}
-      const drink=DRINK_SALES[product];if(drink){const perBottle=MIXER_BOTTLE_ML[drink]||AUTO_ITEMS[drink][2];add(drink,count*perBottle,'Venta directa');coveredUnits+=count;return;}
+      const drink=DRINK_SALES[product];if(drink){add(drink,count,'Venta directa');coveredUnits+=count;return;}
       const spirit=SPIRIT_SALES[product];if(spirit){add(spirit,count*80,'Copas de 8 cl');coveredUnits+=count;return;}
-      const recipe=COCKTAILS[product];if(recipe){Object.entries(recipe).forEach(([code,ml])=>{if(code!=='$flavour')add(code,count*ml,'Cócteles');});coveredUnits+=count;return;}
+      const recipe=COCKTAILS[product];if(recipe){Object.entries(recipe).forEach(([code,ml])=>{if(code!=='$flavour')addRecipe(code,ml,count,'Cócteles');});coveredUnits+=count;return;}
       if(relevantCategories.some(key=>category.includes(key)))unmatched.set(productName,(unmatched.get(productName)||0)+count);
     });
     const suggestions=Object.entries(totals).map(([code,amount])=>{
       const item=AUTO_ITEMS[code],quantity=Math.ceil(amount/item[2]);
       return {code,supplier:item[0],name:item[1],quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
     }).filter(x=>x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
-    return {suggestions,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
+    return {suggestions,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
   }
   function renderAutoResults(result){
     latestSuggestion=result.suggestions;
     const groups=new Map();result.suggestions.forEach(item=>{if(!groups.has(item.supplier))groups.set(item.supplier,[]);groups.get(item.supplier).push(item);});
     const warnings=result.unmatched.length?`<div class="warning-box"><strong>Quedan productos por relacionar</strong><br>${result.unmatched.slice(0,12).map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}${result.unmatched.length>12?` · y ${result.unmatched.length-12} más`:''}</div>`:'';
-    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}`;
+    const ignoredNote=result.ignored.length?`<div class="calc-note">Ventas genéricas no descontadas: ${result.ignored.map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}. El TPV no indica qué botella se utilizó.</div>`:'';
+    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}${ignoredNote}`;
     $('#autoActions').hidden=false;
   }
   async function handleAutoCalculation(){
