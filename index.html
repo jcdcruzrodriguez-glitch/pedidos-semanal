@@ -23,8 +23,9 @@
     h1{font-size:21px;line-height:1.05;margin:0;letter-spacing:-.02em}
     .week{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 9px;font-size:11px;font-weight:800;color:var(--muted)}
     .search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
-    .auto-row{display:flex;margin-top:8px}
-    .auto-open{width:100%;height:40px;border:1px solid rgba(34,197,94,.45);border-radius:12px;background:rgba(34,197,94,.11);color:#76e69e;font-size:12px;font-weight:900;letter-spacing:.02em}
+    .auto-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .auto-open{flex:1 0 100%;min-width:0;height:44px;border:1px solid rgba(34,197,94,.45);border-radius:12px;background:rgba(34,197,94,.11);color:#76e69e;font-size:11px;font-weight:900;letter-spacing:.02em}
+    .stock-open{flex:1;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--muted);font-size:11px;font-weight:900;padding:0 11px}
     .search-wrap{position:relative}
     .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
     #search{width:100%;height:44px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:none;padding:0 38px 0 36px;font-size:16px}
@@ -105,6 +106,16 @@
     .file-box strong{display:block;font-size:13px;margin-bottom:4px}.file-box span{display:block;color:var(--muted);font-size:11px;margin-bottom:9px}
     .file-box input{width:100%;font-size:12px;color:var(--muted)}
     .calc-note{font-size:11px;line-height:1.45;color:var(--faint);margin:12px 1px}
+    .stock-note{font-size:10px;color:#a7f3c0;margin-top:4px;line-height:1.35}
+    .stock-review{margin-top:12px;max-height:38vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;padding:10px}
+    .stock-review-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11px}
+    .stock-review-row:last-child{border-bottom:0}
+    .stock-review-row b{white-space:nowrap;color:var(--brand)}
+    .stock-paste{width:100%;min-height:90px;resize:vertical;padding:10px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);font:inherit;font-size:12px}
+    .delivery-row{display:grid;grid-template-columns:minmax(0,1fr) 65px 65px auto;gap:5px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+    .delivery-row select,.delivery-row input{min-width:0;width:100%;padding:8px 5px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-size:11px}
+    .delivery-row small{grid-column:1/-1;color:var(--muted)}
+    .delivery-row button{border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--danger);padding:8px}
     .auto-status{padding:11px 12px;border-radius:12px;background:var(--brand-soft);color:#a7f3c0;font-size:12px;line-height:1.4;margin-bottom:12px}
     .auto-group{margin:15px 0}.auto-group h3{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--brand);margin:0 0 6px}
     .auto-line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -133,7 +144,7 @@
       </div>
       <button class="scope-btn" id="scopeBtn" type="button" aria-pressed="false">Todos</button>
     </div>
-    <div class="auto-row"><button class="auto-open" id="openAuto" type="button">IMPORTAR VENTAS Y CALCULAR PEDIDO</button></div>
+    <div class="auto-row"><button class="auto-open" id="openAuto" type="button">IMPORTAR VENTAS Y CALCULAR PEDIDO</button><button class="stock-open" id="openStock" type="button">INVENTARIO</button><button class="stock-open" id="openDelivery" type="button">ALBARANES</button></div>
   </header>
   <nav class="supplier-nav" id="supplierNav" aria-label="Proveedores"></nav>
   <main id="catalog"></main>
@@ -164,10 +175,52 @@
         <p class="import-intro">Selecciona los dos archivos exportados por el TPV. El cálculo se hace en este dispositivo y los archivos no se envían a ningún servidor.</p>
         <label class="file-box"><strong>1. Ventas de productos</strong><span>Archivo con Categoría, Producto y Unidades.</span><input id="salesFile" type="file" accept=".csv,text/csv"></label>
         <label class="file-box"><strong>2. Productos con complementos</strong><span>Sirve para pintas, medias pintas y refrescos de cada copa.</span><input id="extrasFile" type="file" accept=".csv,text/csv"></label>
-        <p class="calc-note">Refrescos, aguas y cervezas de botella se cuentan por unidades. Copas: 8 cl de alcohol por servicio. Barril: 33 cl la media pinta y 50 cl la pinta. Los cócteles usan las cantidades de la guía. Como aún no hay inventario, la propuesta repone lo consumido y redondea al formato de compra.</p>
+        <label class="edit-field">Ventas desde<input id="salesFrom" type="date"></label>
+        <label class="edit-field">Ventas hasta<input id="salesTo" type="date"></label>
+        <label class="edit-field">Margen sobre ventas (%)<input id="marginPercent" type="number" min="0" max="50" step="1" value="10"></label>
+        <p class="calc-note">Indica el período exacto que cubren los CSV. Al confirmar, las ventas posteriores al conteo se descontarán una sola vez. Si un producto sigue sin contar, no se inventará su stock. Copas: 8 cl; media pinta: 33 cl; pinta: 50 cl.</p>
+        <p class="warning-box" id="autoError" hidden></p>
         <button class="action primary" id="calculateAuto" type="button">CALCULAR SUGERENCIA</button>
       </div>
-      <div class="summary-actions" id="autoActions" hidden><button class="action" id="backAuto" type="button">VOLVER</button><button class="action primary" id="applyAuto" type="button">AÑADIR AL PEDIDO</button></div>
+      <div class="summary-actions" id="autoActions" hidden><button class="action" id="backAuto" type="button">VOLVER</button><button class="action primary" id="applyAuto" type="button">REGISTRAR VENTAS Y PEDIDO</button></div>
+    </div>
+  </dialog>
+  <dialog id="stockDialog">
+    <div class="summary">
+      <div class="handle"></div>
+      <div class="summary-head"><div><div class="eyebrow">Irish Tavern</div><h2>Inventario en Pedidos</h2></div><button class="close" id="closeStock" aria-label="Cerrar">×</button></div>
+      <div class="summary-body">
+        <p class="import-intro">Importa el informe descargado desde Inventario. Las cantidades se guardan en este navegador. Los productos que no aparecen en el informe quedan sin contar; no se ponen a cero.</p>
+        <label class="file-box"><strong>Informe de Inventario</strong><span>Archivo «inventario-irish-tavern-…json» o informe de texto.</span><input id="stockFile" type="file" accept=".json,.txt,application/json,text/plain"></label>
+        <label class="edit-field">Fecha en que se hizo el conteo<input id="stockCountDate" type="date"></label>
+        <label class="edit-field">O pega aquí el informe compartido<textarea id="stockPaste" class="stock-paste" placeholder="INVENTARIO IRISH TAVERN — …"></textarea></label>
+        <label class="calc-note"><input id="legacyCases" type="checkbox"> En un informe antiguo figura «cajas», pero yo conté botellas o latas sueltas. Mantener el número sin multiplicarlo.</label>
+        <button class="action primary" id="previewStock" type="button">REVISAR INFORME</button>
+        <div id="stockPreview"></div>
+        <p class="calc-note" id="stockStatus"></p>
+      </div>
+      <div class="summary-actions" id="stockActions" hidden><button class="action primary" id="applyStock" type="button">CONFIRMAR CONTEO</button></div>
+    </div>
+  </dialog>
+  <dialog id="deliveryDialog">
+    <div class="summary">
+      <div class="handle"></div>
+      <div class="summary-head"><div><div class="eyebrow">Entradas de mercancía</div><h2>Albaranes y facturas</h2></div><button class="close" id="closeDelivery" aria-label="Cerrar">×</button></div>
+      <div class="summary-body">
+        <p class="import-intro">Selecciona una foto o PDF. Se leerá en este navegador; revisa los datos antes de sumarlos al stock. También puedes pegar el texto manualmente.</p>
+        <label class="file-box"><strong>Documento</strong><span>Foto JPG/PNG o PDF, máximo 15 MB.</span><input id="deliveryFile" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf"></label>
+        <button class="action" id="readDelivery" type="button">LEER DOCUMENTO</button>
+        <p class="calc-note" id="deliveryReadStatus"></p>
+        <label class="edit-field">Texto leído (puedes corregirlo)<textarea id="deliveryText" class="stock-paste" placeholder="Pega aquí el texto si la foto no se puede leer"></textarea></label>
+        <label class="edit-field">Proveedor<select id="deliverySupplier"></select></label>
+        <label class="edit-field">Nº de albarán o factura<input id="deliveryNumber" maxlength="60" placeholder="Ej. 111"></label>
+        <label class="edit-field">Fecha del documento<input id="deliveryDate" type="date"></label>
+        <button class="action primary" id="reviewDelivery" type="button">REVISAR PRODUCTOS</button>
+        <div id="deliveryReview"></div>
+        <label class="calc-note"><input id="deliveryAfterCount" type="checkbox"> Confirmo que esta mercancía llegó después del último conteo de estos productos.</label>
+        <p class="calc-note" id="deliveryStockStatus"></p>
+      </div>
+      <div class="summary-actions" id="deliveryActions" hidden><button class="action" id="addDeliveryLine" type="button">AÑADIR LÍNEA</button><button class="action primary" id="applyDelivery" type="button">CONFIRMAR ENTRADA</button></div>
     </div>
   </dialog>
   <dialog id="productDialog">
@@ -238,12 +291,17 @@
   let state = loadState();
   state.catalogSync ||= {retired:[],manual:[]};
   state.catalogOverrides ||= {};
+  state.inventory ||= {items:{},minimums:{},movements:[]};
+  state.inventory.items ||= {};
+  state.inventory.minimums ||= {};
+  state.inventory.movements ||= [];
   let editingOriginId = null;
   let editingDisplayedProduct = null;
   let showRetiredProducts = false;
 
   const $ = selector => document.querySelector(selector);
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const todayLocal = () => new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   const escapeHTML = value => String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   const productId = (supplier,name) => encodeURIComponent(`${supplier}|${name}`);
 
@@ -445,6 +503,18 @@
     return {quantities:{},custom:{},updatedAt:null};
   }
   function saveState(){ state.updatedAt=new Date().toISOString(); localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }
+  function stockFor(supplier,name){return state.inventory.items[productId(supplier,name)]||null;}
+  function minimumFor(supplier,name){return Number(state.inventory.minimums[productId(supplier,name)]||0);}
+  function stockUnit(supplier,name){return stockFor(supplier,name)?.unit||'unidades';}
+  function editMinimum(supplier,name){
+    const raw=prompt(`Stock mínimo para “${name}” (${stockUnit(supplier,name)}):`,String(minimumFor(supplier,name)));
+    if(raw===null)return;
+    const amount=Number(raw.trim());
+    if(raw.trim()===''||!Number.isInteger(amount)||amount<0||amount>99999){showToast('Introduce un número entero válido');return;}
+    const id=productId(supplier,name);
+    if(amount)state.inventory.minimums[id]=amount;else delete state.inventory.minimums[id];
+    saveState();render();showToast('Stock mínimo guardado');
+  }
   function qty(supplier,name){ return Number(state.quantities[productId(supplier,name)]||0); }
   function setQty(supplier,name,value){
     const id=productId(supplier,name), clean=Math.max(0,Math.min(999,Number.parseInt(value,10)||0));
@@ -474,6 +544,11 @@
     return (state.catalogSync.retired||[]).some(p=>p.supplier===supplier&&p.name===name);
   }
   function canonicalSupplier(name){return suppliers.find(s=>normalize(s)===normalize(name));}
+  function inventorySupplier(name){
+    const aliases={'coca cola':'Coca-Cola','juan hidalgo':'Juan Hidalgo e Hijos','juan hidalgo e hijos':'Juan Hidalgo e Hijos'};
+    return canonicalSupplier(aliases[normalize(name)]||name);
+  }
+  function inventoryNameKey(name){return normalize(name).replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');}
   async function importCatalog(file){
     if(!file)return;
     try{
@@ -499,6 +574,295 @@
     }catch(e){alert(e.message||'No se pudo leer el catálogo');}
     finally{$('#catalogFile').value='';}
   }
+  let pendingInventory=null;
+  function parseInventoryReport(text){
+    const source=text.trim();
+    if(source.startsWith('{')){
+      const data=JSON.parse(source);
+      if(data.source!=='irish-tavern-inventory-count'||data.version!==1||!Array.isArray(data.items)||data.items.length>1500)throw new Error('El archivo no es un informe de Inventario válido');
+      return {createdAt:data.createdAt||null,countDate:data.countDate||null,items:data.items};
+    }
+    if(!/^INVENTARIO IRISH TAVERN\b/i.test(source))throw new Error('Informe de Inventario no reconocido');
+    let supplier=null;
+    const items=[];
+    for(const line of source.split(/\r?\n/)){
+      const heading=line.match(/^\s*──\s*(.+?)\s*──\s*$/);
+      if(heading){supplier=heading[1].trim();continue;}
+      const row=line.match(/^\s*(.+):\s*(\d+)\s+([\p{L}]+)\b/iu);
+      if(row&&supplier)items.push({supplier,name:row[1].trim(),quantity:Number(row[2]),unit:row[3].toLowerCase()});
+    }
+    if(!items.length)throw new Error('No hay productos contados en el informe');
+    return {createdAt:null,countDate:null,items};
+  }
+  async function inventoryFingerprint(text){
+    if(globalThis.crypto?.subtle){
+      const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+      return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    let hash=2166136261;for(const byte of new TextEncoder().encode(text)){hash^=byte;hash=Math.imul(hash,16777619);}
+    return String(hash>>>0);
+  }
+  async function previewInventoryReport(){
+    try{
+      const file=$('#stockFile').files[0];
+      if(file?.size>2000000)throw new Error('El informe supera 2 MB');
+      const text=file?await file.text():$('#stockPaste').value.trim();
+      if(!text)throw new Error('Selecciona el archivo o pega el informe');
+      const parsed=parseInventoryReport(text),sourceId=await inventoryFingerprint(text);
+      const countDate=$('#stockCountDate').value||parsed.countDate;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(countDate)||countDate>todayLocal())throw new Error('Indica una fecha válida para el conteo');
+      $('#stockCountDate').value=countDate;
+      if(state.inventory.movements.some(m=>m.type==='count'&&m.sourceId===sourceId))throw new Error('Este informe ya se importó');
+      const matched=[],unmatched=[],ambiguous=[],seen=new Set();
+      for(const row of parsed.items){
+        if(!row||typeof row.supplier!=='string'||typeof row.name!=='string'||typeof row.unit!=='string')throw new Error('Hay una línea incompleta en el informe');
+        const quantity=Number(row.quantity);
+        let unit=row.unit.trim().toLowerCase();
+        if(!Number.isInteger(quantity)||quantity<0||quantity>1000000||row.name.length>160)throw new Error('Hay una cantidad o un producto no válido');
+        if(row.countStatus==='sin contar')continue;
+        if(unit==='cajas'){
+          if(!$('#legacyCases').checked){ambiguous.push(`${row.supplier}: ${row.name} (${quantity} cajas)`);continue;}
+          unit=/\b(?:LATA|LATAS|MONSTER)\b/i.test(row.name)?'latas':'botellas';
+        }
+        const supplier=inventorySupplier(row.supplier);
+        if(!supplier){unmatched.push(`${row.supplier}: ${row.name}`);continue;}
+        const product=allProducts(supplier).find(p=>inventoryNameKey(p.name)===inventoryNameKey(row.name));
+        if(!product){unmatched.push(`${supplier}: ${row.name}`);continue;}
+        const id=productId(supplier,product.name);
+        if(seen.has(id)){ambiguous.push(`${supplier}: ${product.name} aparece dos veces`);continue;}
+        seen.add(id);
+        matched.push({id,supplier,name:product.name,quantity,unit,unitsPerCase:Number(row.unitsPerCase)||null});
+      }
+      pendingInventory={sourceId,createdAt:parsed.createdAt,countDate,matched,unmatched,ambiguous};
+      const reviewRows=matched.map(i=>`<div class="stock-review-row"><span>${escapeHTML(i.supplier)} · ${escapeHTML(i.name)}</span><b>${i.quantity} ${escapeHTML(i.unit)}</b></div>`).join('');
+      const warning=[...ambiguous,...unmatched];
+      $('#stockPreview').innerHTML=`<div class="auto-status">${matched.length} productos reconocidos. ${warning.length} requieren revisión.</div>${warning.length?`<div class="warning-box"><strong>No se importarán estas líneas:</strong><br>${warning.map(escapeHTML).join('<br>')}</div>`:''}<div class="stock-review">${reviewRows||'Ningún producto reconocido'}</div>`;
+      $('#stockActions').hidden=!matched.length;
+    }catch(e){pendingInventory=null;$('#stockActions').hidden=true;$('#stockPreview').innerHTML='';showToast(e.message||'No se pudo leer el informe');}
+  }
+  function applyInventoryReport(){
+    const report=pendingInventory;if(!report?.matched.length)return;
+    if(state.inventory.movements.some(m=>m.type==='count'&&m.sourceId===report.sourceId)){alert('Este informe ya se importó.');return;}
+    if(report.matched.some(item=>(state.inventory.items[item.id]?.countedAt||'').slice(0,10)>report.countDate)){alert('Ya hay un conteo más reciente de estos productos. Revisa la fecha del informe.');return;}
+    const ids=new Set(report.matched.map(item=>item.id));
+    const newerMovement=state.inventory.movements.find(m=>m.type==='delivery'&&m.date>report.countDate&&m.lines?.some(line=>ids.has(line.id))||m.type==='sales'&&m.periodEnd>report.countDate&&m.lines?.some(line=>ids.has(line.id)));
+    if(newerMovement){alert('Este conteo es anterior a movimientos ya registrados. No se puede importar porque borraría entradas o ventas posteriores.');return;}
+    if((report.unmatched.length||report.ambiguous.length)&&!confirm(`${report.unmatched.length+report.ambiguous.length} líneas no se importarán. ¿Confirmar las ${report.matched.length} reconocidas?`))return;
+    const at=new Date().toISOString(),lines=[];
+    report.matched.forEach(item=>{
+      const before=state.inventory.items[item.id]?.quantity??null;
+      state.inventory.items[item.id]={supplier:item.supplier,name:item.name,quantity:item.quantity,unit:item.unit,unitsPerCase:item.unitsPerCase,countStatus:item.quantity===0?'agotado':'contado',countedAt:`${report.countDate}T00:00:00`,updatedAt:at,estimated:false};
+      lines.push({id:item.id,before,after:item.quantity,unit:item.unit});
+    });
+    state.inventory.movements.push({type:'count',sourceId:report.sourceId,countDate:report.countDate,at,lines});
+    saveState();render();renderStockStatus();$('#stockActions').hidden=true;pendingInventory=null;
+    $('#stockDialog').close();showToast(`${lines.length} existencias actualizadas`);
+  }
+  function renderStockStatus(){
+    const count=Object.keys(state.inventory.items).length;
+    $('#stockStatus').textContent=count?`${count} productos con stock registrado en este navegador. Los demás siguen sin contar.`:'Aún no hay stock importado en este navegador.';
+  }
+  let deliverySourceId=null;
+  let deliveryRows=[];
+  const deliveryLibraries={};
+  function loadDeliveryLibrary(url,globalName){
+    if(globalThis[globalName])return Promise.resolve(globalThis[globalName]);
+    deliveryLibraries[url] ||= new Promise((resolve,reject)=>{
+      const script=document.createElement('script');script.src=url;script.async=true;
+      script.onload=()=>globalThis[globalName]?resolve(globalThis[globalName]):reject(new Error('No se pudo iniciar la lectura del documento'));
+      script.onerror=()=>reject(new Error('No se pudo descargar la biblioteca de lectura. Puedes pegar el texto manualmente.'));
+      document.head.appendChild(script);
+    }).catch(error=>{delete deliveryLibraries[url];throw error;});
+    return deliveryLibraries[url];
+  }
+  async function deliveryFileFingerprint(file){
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    if(globalThis.crypto?.subtle){
+      const digest=await crypto.subtle.digest('SHA-256',bytes);
+      return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    let hash=2166136261;for(const byte of bytes){hash^=byte;hash=Math.imul(hash,16777619);}
+    return String(hash>>>0);
+  }
+  async function recognizeDeliveryImage(worker,image){
+    const {data}=await worker.recognize(image);
+    let text=data.text;
+    // En Sánchez Montero, el OCR puede omitir la estrecha columna anterior al código.
+    // Se lee esa columna aparte; un código de artículo nunca se usa como cantidad.
+    if(/s[aá]nchez\s+montero/i.test(text)&&Array.isArray(data.lines)){
+      const rows=data.lines.filter(line=>/\bambar\b/i.test(line.text));
+      const missing=rows.filter(line=>!deliveryQuantity(line.text));
+      const positions=missing.map(line=>{
+        const code=line.words?.find(word=>/^\d{4,}/.test(word.text));
+        const product=line.words?.find(word=>/^ambar$/i.test(word.text));
+        return code&&product&&product.bbox.x0>code.bbox.x0?{line,code,product}:null;
+      }).filter(Boolean);
+      if(positions.length){
+        const left=Math.max(0,Math.floor(Math.min(...positions.map(p=>p.code.bbox.x0-(p.product.bbox.x0-p.code.bbox.x0)*.3))));
+        const right=Math.floor(Math.min(...positions.map(p=>p.code.bbox.x0-(p.product.bbox.x0-p.code.bbox.x0)*.05)));
+        const top=Math.max(0,Math.floor(Math.min(...positions.map(p=>p.line.bbox.y0))-3));
+        const bottom=Math.ceil(Math.max(...positions.map(p=>p.line.bbox.y1))+3);
+        if(right>left){
+          try{
+            await worker.setParameters({tessedit_char_whitelist:'0123456789',tessedit_pageseg_mode:6});
+            const result=await worker.recognize(image,{rectangle:{left,top,width:right-left,height:bottom-top}});
+            for(const {line} of positions){
+              const center=(line.bbox.y0+line.bbox.y1)/2;
+              const matches=(result.data.words||[]).filter(word=>/^\d{1,3}$/.test(word.text)&&word.confidence>=65&&Math.abs((word.bbox.y0+word.bbox.y1)/2-center)<Math.max(12,(line.bbox.y1-line.bbox.y0)*.75));
+              if(matches.length===1)text=text.replace(line.text.trim(),`${matches[0].text} ${line.text.trim()}`);
+            }
+          }finally{await worker.setParameters({tessedit_char_whitelist:'',tessedit_pageseg_mode:3});}
+        }
+      }
+    }
+    return text;
+  }
+  async function readDeliveryDocument(){
+    const file=$('#deliveryFile').files[0];
+    if(!file){showToast('Selecciona una foto o PDF');return;}
+    if(file.size>15000000){showToast('El documento supera 15 MB');return;}
+    $('#deliveryReadStatus').textContent='Leyendo el documento en este navegador…';
+    $('#readDelivery').disabled=true;
+    try{
+      let text='';
+      if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
+        const pdfjs=await loadDeliveryLibrary('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js','pdfjsLib');
+        pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const pdf=await pdfjs.getDocument({data:await file.arrayBuffer()}).promise;
+        if(pdf.numPages>4)throw new Error('El PDF tiene más de 4 páginas. Selecciona el albarán concreto.');
+        const pages=[];
+        for(let i=1;i<=pdf.numPages;i++){
+          const page=await pdf.getPage(i),content=await page.getTextContent();
+          pages.push(content.items.map(item=>item.str+(item.hasEOL?'\n':' ')).join(''));
+        }
+        text=pages.join('\n');
+        if(text.length<80||!/albar[aá]n|factura|\bambar\b/i.test(text)){
+          const Tesseract=await loadDeliveryLibrary('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','Tesseract');
+          const worker=await Tesseract.createWorker('spa');
+          try{
+            const scans=[];
+            for(let i=1;i<=pdf.numPages;i++){
+              const page=await pdf.getPage(i),viewport=page.getViewport({scale:1.8});
+              const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+              await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+              scans.push(await recognizeDeliveryImage(worker,canvas));
+            }
+            text=scans.join('\n');
+          }finally{await worker.terminate();}
+        }
+      }else if(file.type.startsWith('image/')||/\.(?:jpe?g|png|webp)$/i.test(file.name)){
+        const Tesseract=await loadDeliveryLibrary('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js','Tesseract');
+        const worker=await Tesseract.createWorker('spa');
+        try{text=await recognizeDeliveryImage(worker,file);}finally{await worker.terminate();}
+      }else throw new Error('Formato no admitido. Usa JPG, PNG, WebP o PDF.');
+      if($('#deliveryFile').files[0]!==file)throw new Error('Has seleccionado otro documento. Pulsa «Leer documento» para leerlo.');
+      if(!text.trim())throw new Error('No se ha podido extraer texto. Pégalo manualmente.');
+      $('#deliveryText').value=text;
+      deliverySourceId=await deliveryFileFingerprint(file);
+      fillDeliveryMetadata(text);
+      $('#deliveryReadStatus').textContent='Texto leído. Corrige cualquier error y pulsa «Revisar productos».';
+      reviewDeliveryDocument();
+    }catch(e){$('#deliveryReadStatus').textContent=e.message||'No se pudo leer. Puedes pegar el texto manualmente.';}
+    finally{$('#readDelivery').disabled=false;}
+  }
+  function fillDeliveryMetadata(text){
+    const header=inventoryNameKey(text.slice(0,700));
+    const detected=suppliers.filter(s=>header.includes(inventoryNameKey(s)));
+    if(detected.length===1&&!$('#deliverySupplier').value)$('#deliverySupplier').value=detected[0];
+    const note=text.match(/(?:n[º°o]?\s*)?albar[aá]n\s*[:nº°o.\s]*([a-z]?\s*[-/]?\s*\d{1,8})/i);
+    const invoice=text.match(/(?:n[º°o]?\s*)?factura\s*[:nº°o.\s]*([a-z]?\s*[-/]\s*\d{1,8})/i);
+    if(note&&!$('#deliveryNumber').value)$('#deliveryNumber').value=note[1].replace(/\s+/g,'');
+    else if(invoice&&!$('#deliveryNumber').value)$('#deliveryNumber').value=invoice[1].replace(/\s+/g,'');
+    const date=text.match(/\b(\d{2})[/-](\d{2})[/-](20\d{2})\b/);
+    if(date&&!$('#deliveryDate').value)$('#deliveryDate').value=`${date[3]}-${date[2]}-${date[1]}`;
+  }
+  function deliveryPack(name){
+    const text=normalize(name);
+    const sizePack=text.match(/\b(\d{1,3})\s*[x×]\s*\d{2,4}\s*(?:ml|cl)\b/);
+    if(sizePack)return Number(sizePack[1]);
+    const match=text.match(/(?:\b(?:caja|c)\s*)(\d{1,3})\b|\b(\d{1,3})\s*(?:bot\.?|botellas|u\b)|(?:x|×)\s*(\d{1,3})\b/);
+    return Math.max(1,Number(match?.[1]||match?.[2]||match?.[3]||1));
+  }
+  function deliveryProductForLine(supplier,line){
+    const plain=inventoryNameKey(line);
+    if(supplier==='Sánchez Montero'){
+      if(/\bambar\s+(?:0\s*0|000|0,0)\s+tostada\b/.test(plain))return 'ÁMBAR 0,0 TOSTADA 1/3 RET. 24 BOT.';
+      if(/\bambar\s+radler\b/.test(plain))return 'ÁMBAR RADLER 1/3 RET. 24 BOT.';
+      if(/\bambar\s+(?:esp|especial)\b/.test(plain))return 'ÁMBAR ESPECIAL LN 1/3 RET. 24 BOT.';
+    }
+    return allProducts(supplier).find(p=>plain.includes(inventoryNameKey(p.name)))?.name||'';
+  }
+  function deliveryQuantity(line){
+    const match=line.replace(/^\s*[|¦]+\s*/,'').match(/^\s*([1-9]\d{0,2})(?:[,.]0+)?\s+/);
+    return match?Number(match[1]):'';
+  }
+  function parseDeliveryLines(text,supplier){
+    const found=[];let table=false;
+    for(const line of text.split(/\r?\n/)){
+      if(/albar[aá]n|art[ií]culo|cantidad/i.test(line))table=true;
+      if(/^\s*(?:subtotal|total\s+factura|base\s+imponible|descuento)\b/i.test(line))table=false;
+      if(/\benvases?\b|\bcascos?\b|\bretorno\b|\bdevoluci[oó]n\b/i.test(line))continue;
+      const product=deliveryProductForLine(supplier,line);
+      const candidate=table&&/^\s*[|¦]?\s*\d{1,8}(?:[,.]\d+|\.{2,})?\s+/.test(line)&&/[\p{L}]{3,}/u.test(line)&&!/albar[aá]n|factura|fecha|importe|iva|descuento|subtotal|\btotal\b/i.test(line);
+      if(!product&&!candidate)continue;
+      found.push({name:product,packages:deliveryQuantity(line),unitsPerPackage:product?deliveryPack(product):1,source:line.trim().slice(0,180)});
+    }
+    return found;
+  }
+  function deliveryRowHTML(row,index,supplier){
+    const options=allProducts(supplier).map(p=>`<option value="${escapeHTML(p.name)}" ${p.name===row.name?'selected':''}>${escapeHTML(p.name)}</option>`).join('');
+    const total=row.name&&row.packages&&row.unitsPerPackage?`Entrada: ${row.packages*row.unitsPerPackage} ${stockUnit(supplier,row.name)}`:'Completa producto y cantidades';
+    return `<div class="delivery-row" data-delivery-row="${index}"><select aria-label="Producto"><option value="">Selecciona producto</option>${options}</select><input type="number" aria-label="Cantidad de envases o cajas" min="1" max="10000" step="1" value="${row.packages}"><input type="number" aria-label="Unidades por envase o caja" min="1" max="10000" step="1" value="${row.unitsPerPackage}"><button type="button" data-remove-delivery="${index}" aria-label="Quitar línea">×</button><small><strong data-delivery-total>${escapeHTML(total)}</strong><br>${escapeHTML(row.source||'Línea añadida manualmente')}</small></div>`;
+  }
+  function renderDeliveryRows(){
+    const supplier=$('#deliverySupplier').value;
+    const incomplete=deliveryRows.filter(row=>!row.name||!row.packages).length;
+    $('#deliveryReview').innerHTML=`<div class="auto-status">${deliveryRows.length} líneas detectadas${incomplete?` · ${incomplete} pendientes de completar`:''}. Revisa cantidad y unidades por caja. Si la cantidad ya son botellas o latas sueltas, pon 1 en «Unid./caja».</div><div class="stock-review"><div class="delivery-row"><span>Producto</span><span>Cantidad</span><span>Unid./caja</span><span></span></div>${deliveryRows.map((row,index)=>deliveryRowHTML(row,index,supplier)).join('')||'No se han reconocido productos. Añádelos manualmente.'}</div><div class="warning-box">Los envases retornables y las devoluciones no se suman. Los productos sin conteo previo tampoco se podrán actualizar.</div>`;
+    $('#deliveryActions').hidden=false;
+  }
+  function reviewDeliveryDocument(){
+    const text=$('#deliveryText').value.trim();
+    if(!text){showToast('Lee el documento o pega su texto');return;}
+    fillDeliveryMetadata(text);
+    const supplier=$('#deliverySupplier').value;
+    if(!supplier){showToast('Selecciona el proveedor');return;}
+    deliveryRows=parseDeliveryLines(text,supplier);
+    renderDeliveryRows();
+  }
+  async function applyDeliveryDocument(){
+    try{
+      $('#deliveryStockStatus').textContent='';
+      const supplier=$('#deliverySupplier').value,number=$('#deliveryNumber').value.trim(),date=$('#deliveryDate').value;
+      if(!supplier||!number||!date)throw new Error('Indica proveedor, número y fecha del documento');
+      if(date>todayLocal())throw new Error('La fecha del documento es futura');
+      if(!$('#deliveryAfterCount').checked)throw new Error('Confirma que llegó después del último conteo');
+      const reference=`${supplier}|${date}|${inventoryNameKey(number)}`;
+      const sourceId=deliverySourceId||await inventoryFingerprint($('#deliveryText').value.trim());
+      if(state.inventory.movements.some(m=>m.type==='delivery'&&(m.reference===reference||m.sourceId===sourceId)))throw new Error('Este documento ya está registrado');
+      const lines=[],seen=new Set();
+      for(const row of document.querySelectorAll('[data-delivery-row]')){
+        const [select,packagesInput,packInput]=row.querySelectorAll('select,input');
+        const name=select.value,packages=Number(packagesInput.value),unitsPerPackage=Number(packInput.value);
+        if(!name)throw new Error('Hay una línea sin producto; selecciónalo o quítala');
+        if(!Number.isInteger(packages)||packages<1||packages>10000||!Number.isInteger(unitsPerPackage)||unitsPerPackage<1||unitsPerPackage>10000)throw new Error('Revisa las cantidades de cajas y unidades');
+        const id=productId(supplier,name),stock=state.inventory.items[id];
+        if(seen.has(id))throw new Error(`El producto “${name}” está repetido. Junta las cantidades en una línea.`);
+        seen.add(id);
+        if(!stock)throw new Error(`“${name}” no tiene conteo previo. Cuéntalo primero en Inventario.`);
+        if(date<(stock.countedAt||stock.updatedAt||'').slice(0,10))throw new Error(`El documento es anterior al último conteo de “${name}”; no se puede sumar otra vez.`);
+        if(/\b(?:ml|litros?)\b/i.test(stock.unit))throw new Error(`“${name}” está contado en volumen. Revisa su unidad antes de sumar cajas.`);
+        const added=packages*unitsPerPackage;
+        if(stock.quantity+added>1000000)throw new Error('La cantidad de stock supera el límite');
+        lines.push({id,supplier,name,before:stock.quantity,added,after:stock.quantity+added,unit:stock.unit,packages,unitsPerPackage});
+      }
+      if(!lines.length)throw new Error('Añade al menos un producto');
+      if(!confirm(`¿Sumar ${lines.map(l=>`${l.added} ${l.unit} de ${l.name}`).join(', ')} al stock?`))return;
+      const at=new Date().toISOString();
+      for(const line of lines){const stock=state.inventory.items[line.id];stock.quantity=line.after;stock.updatedAt=at;stock.countStatus='contado';}
+      state.inventory.movements.push({type:'delivery',sourceId,reference,date,at,lines});
+      saveState();render();renderStockStatus();$('#deliveryDialog').close();showToast(`${lines.length} productos actualizados`);
+    }catch(e){$('#deliveryStockStatus').textContent=e.message||'No se pudo registrar el albarán';showToast('Revisa el aviso del albarán');}
+  }
   function openProductDialog(row=null){
     editingOriginId=row?.dataset.origin||null;
     editingDisplayedProduct=row?{supplier:row.dataset.supplier,name:row.dataset.name,category:row.dataset.category}:null;
@@ -520,8 +884,12 @@
       showToast('Ya existe en ese proveedor');return;
     }
     const newId=productId(supplier,name);
+    const oldProductId=editingDisplayedProduct?productId(editingDisplayedProduct.supplier,editingDisplayedProduct.name):null;
+    if(oldProductId&&oldProductId!==newId&&state.inventory.items[oldProductId]&&state.inventory.items[newId]){
+      showToast('Hay stock en ambos productos; revísalo antes de unirlos');return;
+    }
     if(editingDisplayedProduct){
-      const oldId=productId(editingDisplayedProduct.supplier,editingDisplayedProduct.name);
+      const oldId=oldProductId;
       const oldQty=Number(state.quantities[oldId]||0);
       const targetQty=Number(state.quantities[newId]||0);
       if(oldId!==newId&&oldQty){
@@ -529,6 +897,19 @@
         if(targetQty&&!confirm(`Ya hay ${targetQty} unidades guardadas con ese nombre en ${supplier}. ¿Sumar las ${oldQty} unidades de este producto?`))return;
         state.quantities[newId]=targetQty+oldQty;
         delete state.quantities[oldId];
+      }
+      if(oldId!==newId){
+        if(state.inventory.items[oldId]){
+          state.inventory.items[newId]={...state.inventory.items[oldId],supplier,name};
+          delete state.inventory.items[oldId];
+        }
+        if(state.inventory.minimums[oldId]){
+          state.inventory.minimums[newId]=Math.max(Number(state.inventory.minimums[newId]||0),Number(state.inventory.minimums[oldId]));
+          delete state.inventory.minimums[oldId];
+        }
+        for(const movement of state.inventory.movements)for(const line of movement.lines||[]){
+          if(line.id===oldId){line.originalId ||= oldId;line.id=newId;}
+        }
       }
     }else if(state.quantities[newId]&&!confirm(`Hay una cantidad guardada para “${name}” en ${supplier}. ¿Recuperarla para este producto?`))return;
     const originId=editingOriginId||`local:${Date.now()}:${Math.random().toString(36).slice(2,8)}`;
@@ -585,8 +966,10 @@
   }
   function renderProduct(supplier,product){
     const q=qty(supplier,product.name), id=productId(supplier,product.name);
+    const stock=stockFor(supplier,product.name),minimum=minimumFor(supplier,product.name);
+    const stockNote=stock?`<div class="stock-note">Almacén: ${Number(stock.quantity).toLocaleString('es-ES',{maximumFractionDigits:2})} ${escapeHTML(stock.unit)}${stock.estimated?' · estimado tras ventas':''}${minimum?` · mínimo: ${minimum}`:''}</div>`:minimum?`<div class="stock-note">Sin contar · mínimo: ${minimum}</div>`:'';
     return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}" data-category="${escapeHTML(product.category)}" data-origin="${escapeHTML(product.originId)}">
-      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.edited?'Editado en Pedidos':product.custom?'Añadido manualmente':product.imported?'Añadido en Inventario':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}</div><div class="product-actions"><button class="edit-product" type="button" aria-label="Editar ${escapeHTML(product.name)}">EDITAR</button><button class="remove-product" type="button" aria-label="Retirar ${escapeHTML(product.name)}">QUITAR</button></div></div>
+      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.edited?'Editado en Pedidos':product.custom?'Añadido manualmente':product.imported?'Añadido en Inventario':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}</div>${stockNote}<div class="product-actions"><button class="edit-product" type="button" aria-label="Editar ${escapeHTML(product.name)}">EDITAR</button><button class="minimum-product" type="button" aria-label="Stock mínimo de ${escapeHTML(product.name)}">MÍNIMO</button><button class="remove-product" type="button" aria-label="Retirar ${escapeHTML(product.name)}">QUITAR</button></div></div>
       <div class="controls"><button class="qty-btn minus" type="button" aria-label="Quitar ${escapeHTML(product.name)}">−</button><input class="qty" id="q-${id}" inputmode="numeric" type="number" min="0" max="999" value="${q||''}" placeholder="0" aria-label="Cantidad de ${escapeHTML(product.name)}"><button class="qty-btn plus" type="button" aria-label="Añadir ${escapeHTML(product.name)}">+</button></div>
     </div>`;
   }
@@ -653,6 +1036,7 @@
 
   const autoFormHTML=$('#autoBody').innerHTML;
   let latestSuggestion=[];
+  let latestSaleBatch=null;
   function parseCSV(text){
     const clean=text.replace(/^\uFEFF/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
     const first=(clean.split('\n')[0]||''), delimiter=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';
@@ -672,14 +1056,23 @@
   }
   const csvNumber=value=>Number(String(value??'').replace(/[^\d,.-]/g,'').replace(',','.'))||0;
   function resetAutoForm(){
-    $('#autoBody').innerHTML=autoFormHTML;$('#autoActions').hidden=true;latestSuggestion=[];
+    $('#autoBody').innerHTML=autoFormHTML;$('#autoActions').hidden=true;latestSuggestion=[];latestSaleBatch=null;
+  }
+  function saleBatchConflict(sourceId,start,end){
+    return state.inventory.movements.find(m=>m.type==='sales'&&(m.sourceId===sourceId||m.periodStart&&m.periodEnd&&start<=m.periodEnd&&end>=m.periodStart));
+  }
+  function validateSalesDates(start,end,lines){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end||end>todayLocal())throw new Error('Indica el período exacto de las ventas, sin fechas futuras.');
+    if((new Date(end)-new Date(start))/86400000>31)throw new Error('El período no puede superar 31 días.');
+    const overlap=lines.find(line=>start<=(state.inventory.items[line.id]?.countedAt||'').slice(0,10));
+    if(overlap)throw new Error(`Las ventas de “${overlap.name}” deben empezar después de su conteo. Exporta solo las ventas posteriores para no descontarlas dos veces.`);
   }
   function formatConsumed(item,amount){
     if(item[3]==='unit')return `${amount.toLocaleString('es-ES',{maximumFractionDigits:2})} unidades necesarias`;
     if(amount>=1000)return `${(amount/1000).toLocaleString('es-ES',{maximumFractionDigits:2})} L calculados`;
     return `${Math.round(amount)} ml calculados`;
   }
-  function calculateSuggestion(sales,extras){
+  function calculateSuggestion(sales,extras,marginPercent=10){
     const totals={},reasons={},unmatched=new Map(),ignored=new Map(),draftDetails={},coffeeDetails={};
     const add=(code,amount,reason)=>{if(!AUTO_ITEMS[code]||!amount)return;totals[code]=(totals[code]||0)+amount;(reasons[code]||(reasons[code]=new Set())).add(reason);};
     const addRecipe=(code,ml,count,reason)=>{
@@ -719,9 +1112,11 @@
       const recipe=COCKTAILS[product];if(recipe){Object.entries(recipe).forEach(([code,ml])=>{if(code!=='$flavour')addRecipe(code,ml,count,'Cócteles');});coveredUnits+=count;return;}
       if(relevantCategories.some(key=>category.includes(key)))unmatched.set(productName,(unmatched.get(productName)||0)+count);
     });
-    const retiredRecommendations=[];
+    const retiredRecommendations=[],consumptionLines=[],untracked=[];
+    let stockCovered=0,stockUnknown=0;
+    const considered=new Set();
     const suggestions=Object.entries(totals).map(([code,amount])=>{
-      const item=AUTO_ITEMS[code],quantity=Math.ceil(amount/item[2]);
+      const item=AUTO_ITEMS[code];
       let supplier=item[0],name=item[1];
       const edit=state.catalogOverrides[productId(supplier,name)];
       if(edit&&!edit.removed){supplier=edit.supplier;name=edit.name;}
@@ -732,9 +1127,37 @@
         if(unique.length!==1){retiredRecommendations.push(name);return null;}
         supplier=unique[0].supplier;name=unique[0].name;
       }
-      return {code,supplier,name,quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
-    }).filter(x=>x&&x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
-    return {suggestions,retiredRecommendations,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
+      const stock=stockFor(supplier,name),minimum=minimumFor(supplier,name);
+      considered.add(productId(supplier,name));
+      const purchaseUnits=item[3]==='unit'?item[2]:1;
+      const demandUnits=item[3]==='unit'?amount:amount/item[2];
+      const consumed=Number(demandUnits.toFixed(3));
+      const before=stock?Number(stock.quantity):null;
+      const after=stock?Math.max(0,Number((before-consumed).toFixed(3))):null;
+      const shortage=stock?Math.max(0,Number((consumed-before).toFixed(3))):0;
+      if(stock)consumptionLines.push({id:productId(supplier,name),supplier,name,before,consumed,after,shortage,unit:stock.unit});
+      else untracked.push({supplier,name,consumed});
+      const targetUnits=Math.max(minimum,demandUnits*(1+marginPercent/100));
+      const quantity=stock?Math.ceil(Math.max(0,targetUnits-after)/purchaseUnits):Math.ceil(amount/item[2]);
+      if(stock&&quantity===0)stockCovered++;
+      if(!stock)stockUnknown++;
+      const detail=stock?`${formatConsumed(item,amount)} · almacén ${before} → ${after} ${stock.unit} tras ventas · mínimo ${minimum} · margen ${marginPercent}%`:`${formatConsumed(item,amount)} · sin conteo de stock`;
+      return {code,supplier,name,quantity,amount,detail,format:item[4],reasons:[...reasons[code]],stockKnown:!!stock};
+    }).filter(x=>x&&x.quantity>0);
+    // Los mínimos también se revisan cuando no hubo ventas del producto.
+    for(const supplier of suppliers)for(const product of allProducts(supplier)){
+      const name=product.name,id=productId(supplier,name),stock=stockFor(supplier,name),minimum=minimumFor(supplier,name);
+      if(considered.has(id)||!stock||minimum<=Number(stock.quantity))continue;
+      const known=Object.values(AUTO_ITEMS).find(item=>{
+        const edit=state.catalogOverrides[productId(item[0],item[1])];
+        return (edit&&!edit.removed?edit.supplier:item[0])===supplier&&(edit&&!edit.removed?edit.name:item[1])===name;
+      });
+      const pack=known?(known[3]==='unit'?known[2]:1):(stock.unitsPerCase||deliveryPack(name));
+      const format=known?known[4]:pack>1?`caja de ${pack}`:'unidad';
+      suggestions.push({supplier,name,quantity:Math.ceil((minimum-Number(stock.quantity))/pack),amount:0,detail:`Sin ventas esta semana · almacén ${stock.quantity} ${stock.unit} · mínimo ${minimum}`,format,reasons:['Stock mínimo'],stockKnown:true});
+    }
+    suggestions.sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
+    return {suggestions,consumptionLines,untracked,stockCovered,stockUnknown,marginPercent,retiredRecommendations,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
   }
   function renderAutoResults(result){
     latestSuggestion=result.suggestions;
@@ -742,26 +1165,54 @@
     const warnings=result.unmatched.length?`<div class="warning-box"><strong>Quedan productos por relacionar</strong><br>${result.unmatched.slice(0,12).map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}${result.unmatched.length>12?` · y ${result.unmatched.length-12} más`:''}</div>`:'';
     const retiredNote=result.retiredRecommendations.length?`<div class="warning-box"><strong>Productos retirados no incluidos en el pedido</strong><br>${result.retiredRecommendations.map(escapeHTML).join(' · ')}</div>`:'';
     const ignoredNote=result.ignored.length?`<div class="calc-note">Ventas genéricas no descontadas: ${result.ignored.map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}. El TPV no indica qué botella se utilizó.</div>`:'';
-    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${retiredNote}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}${ignoredNote}`;
+    const shortage=result.consumptionLines.filter(x=>x.shortage>0);
+    const unknownNote=result.untracked.length?`<div class="warning-box">${result.untracked.length} productos siguen sin conteo. Sus ventas no se descontarán de un stock desconocido.</div>`:'';
+    const shortageNote=shortage.length?`<div class="warning-box">${shortage.length} productos tienen ventas superiores al stock registrado. Quedarán en cero; revisa si faltaba mercancía por contar en barra o almacén.</div>`:'';
+    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Período ${escapeHTML(latestSaleBatch.periodStart)} a ${escapeHTML(latestSaleBatch.periodEnd)} · ${Math.round(result.salesUnits)} ventas · ${result.consumptionLines.length} productos con consumo calculado. ${result.stockCovered} ya están cubiertos; ${result.stockUnknown} siguen sin contar. Margen: ${result.marginPercent}%.</div><div class="calc-note">El stock mostrado es el que quedaría después de estas ventas. Solo se guardará al pulsar «Registrar ventas y pedido».</div>${shortageNote}${unknownNote}${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')||'<div class="calc-note">No hace falta añadir productos al pedido con estos datos.</div>'}${retiredNote}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}${ignoredNote}`;
     $('#autoActions').hidden=false;
   }
   async function handleAutoCalculation(){
     const salesFile=$('#salesFile')?.files[0],extrasFile=$('#extrasFile')?.files[0];
     if(!salesFile||!extrasFile){showToast('Selecciona los dos archivos CSV');return;}
     try{
+      $('#autoError').hidden=true;
+      if(!Object.keys(state.inventory.items).length)throw new Error('Importa primero el conteo inicial desde Inventario.');
+      const periodStart=$('#salesFrom').value,periodEnd=$('#salesTo').value;
+      validateSalesDates(periodStart,periodEnd,[]);
+      if(salesFile.size>10000000||extrasFile.size>10000000)throw new Error('Uno de los CSV supera 10 MB.');
       const [salesText,extrasText]=await Promise.all([salesFile.text(),extrasFile.text()]);
       const sales=parseCSV(salesText),extras=parseCSV(extrasText);
       if(!sales.length||!extras.length||!('producto' in sales[0])||!('unidades' in sales[0])||!('complemento' in extras[0]))throw new Error('Formato CSV no reconocido');
-      renderAutoResults(calculateSuggestion(sales,extras));
-    }catch(e){showToast(e.message||'No se pudieron leer los archivos');}
+      const margin=Number($('#marginPercent').value);
+      if(!Number.isFinite(margin)||margin<0||margin>50)throw new Error('El margen debe estar entre 0% y 50%');
+      const sourceId=await inventoryFingerprint(`${salesText}\u0000${extrasText}`);
+      if(saleBatchConflict(sourceId,periodStart,periodEnd))throw new Error('Estas ventas ya se registraron o el período se solapa con otro registrado.');
+      const result=calculateSuggestion(sales,extras,margin);
+      validateSalesDates(periodStart,periodEnd,result.consumptionLines);
+      if(!result.consumptionLines.length&&!result.suggestions.length)throw new Error('No hay productos vendidos con un conteo previo ni mínimos pendientes. Revisa el inventario.');
+      latestSaleBatch={sourceId,periodStart,periodEnd,result};
+      renderAutoResults(result);
+    }catch(e){latestSaleBatch=null;const error=$('#autoError');if(error){error.textContent=e.message||'No se pudieron leer los archivos';error.hidden=false;}else showToast(e.message||'No se pudieron leer los archivos');}
   }
   function applySuggestion(){
-    if(!latestSuggestion.length)return;
+    const batch=latestSaleBatch;if(!batch)return;
+    try{validateSalesDates(batch.periodStart,batch.periodEnd,batch.result.consumptionLines);}catch(e){alert(e.message);return;}
+    if(saleBatchConflict(batch.sourceId,batch.periodStart,batch.periodEnd)){alert('Estas ventas ya se registraron o el período se solapa con otro.');return;}
+    for(const line of batch.result.consumptionLines){
+      const current=state.inventory.items[line.id];
+      if(!current||Math.abs(Number(current.quantity)-line.before)>0.0001){alert('El stock ha cambiado desde el cálculo. Vuelve a importar los CSV para recalcular.');return;}
+    }
+    if(!confirm(`¿Registrar las ventas del ${batch.periodStart} al ${batch.periodEnd}, descontar ${batch.result.consumptionLines.length} productos contados y añadir ${latestSuggestion.length} productos al pedido?`))return;
+    const at=new Date().toISOString();
+    for(const line of batch.result.consumptionLines){
+      const stock=state.inventory.items[line.id];stock.quantity=line.after;stock.updatedAt=at;stock.estimated=true;
+    }
+    state.inventory.movements.push({type:'sales',sourceId:batch.sourceId,periodStart:batch.periodStart,periodEnd:batch.periodEnd,at,marginPercent:batch.result.marginPercent,salesUnits:batch.result.salesUnits,lines:batch.result.consumptionLines,untracked:batch.result.untracked,retired:batch.result.retiredRecommendations});
     latestSuggestion.forEach(item=>{
       const id=productId(item.supplier,item.name),current=Number(state.quantities[id]||0);
       state.quantities[id]=Math.max(current,item.quantity);
     });
-    saveState();render();$('#autoDialog').close();showToast('Sugerencia añadida al pedido');
+    saveState();render();$('#autoDialog').close();latestSaleBatch=null;showToast('Ventas registradas y pedido actualizado');
   }
 
   $('#supplierNav').addEventListener('click',event=>{
@@ -772,6 +1223,7 @@
     const row=event.target.closest('.product');
     if(row && (event.target.closest('.minus')||event.target.closest('.plus'))){const delta=event.target.closest('.plus')?1:-1;setQty(row.dataset.supplier,row.dataset.name,qty(row.dataset.supplier,row.dataset.name)+delta);return;}
     if(row && event.target.closest('.edit-product')){openProductDialog(row);return;}
+    if(row && event.target.closest('.minimum-product')){editMinimum(row.dataset.supplier,row.dataset.name);return;}
     if(row && event.target.closest('.remove-product')){removeProduct(row);return;}
     const restore=event.target.closest('[data-restore]');if(restore){restoreProduct(restore.dataset.restore);return;}
     if(event.target.closest('#onlySelected')){onlySelected=!onlySelected;render();return;}
@@ -788,6 +1240,40 @@
   $('#clearSearch').addEventListener('click',()=>{$('#search').value='';$('#search').focus();render();});
   $('#scopeBtn').addEventListener('click',()=>{searchAll=!searchAll;$('#scopeBtn').classList.toggle('active',searchAll);$('#scopeBtn').setAttribute('aria-pressed',String(searchAll));render();});
   $('#openAuto').addEventListener('click',()=>{resetAutoForm();$('#autoDialog').showModal();});
+  $('#openStock').addEventListener('click',()=>{pendingInventory=null;$('#stockFile').value='';$('#stockPaste').value='';$('#stockCountDate').value='';$('#legacyCases').checked=false;$('#stockPreview').innerHTML='';$('#stockActions').hidden=true;renderStockStatus();$('#stockDialog').showModal();});
+  $('#closeStock').addEventListener('click',()=>$('#stockDialog').close());
+  $('#stockDialog').addEventListener('click',event=>{if(event.target===$('#stockDialog'))$('#stockDialog').close();});
+  $('#previewStock').addEventListener('click',previewInventoryReport);
+  $('#applyStock').addEventListener('click',applyInventoryReport);
+  $('#openDelivery').addEventListener('click',()=>{
+    deliverySourceId=null;deliveryRows=[];
+    $('#deliveryFile').value='';$('#deliveryText').value='';$('#deliveryNumber').value='';$('#deliveryDate').value='';$('#deliveryAfterCount').checked=false;
+    $('#deliverySupplier').innerHTML=`<option value="">Selecciona proveedor</option>${suppliers.map(s=>`<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join('')}`;
+    $('#deliveryReadStatus').textContent='';$('#deliveryReview').innerHTML='';$('#deliveryStockStatus').textContent='';$('#deliveryActions').hidden=true;
+    $('#deliveryDialog').showModal();
+  });
+  $('#closeDelivery').addEventListener('click',()=>$('#deliveryDialog').close());
+  $('#deliveryDialog').addEventListener('click',event=>{if(event.target===$('#deliveryDialog'))$('#deliveryDialog').close();});
+  $('#deliveryFile').addEventListener('change',()=>{deliverySourceId=null;deliveryRows=[];$('#deliveryText').value='';$('#deliverySupplier').value='';$('#deliveryNumber').value='';$('#deliveryDate').value='';$('#deliveryAfterCount').checked=false;$('#deliveryReadStatus').textContent='';$('#deliveryStockStatus').textContent='';$('#deliveryReview').innerHTML='';$('#deliveryActions').hidden=true;});
+  $('#readDelivery').addEventListener('click',readDeliveryDocument);
+  $('#reviewDelivery').addEventListener('click',reviewDeliveryDocument);
+  $('#deliverySupplier').addEventListener('change',()=>{if(!$('#deliveryActions').hidden)reviewDeliveryDocument();});
+  $('#deliveryReview').addEventListener('change',event=>{
+    const row=event.target.closest('[data-delivery-row]');if(!row)return;
+    const index=Number(row.dataset.deliveryRow),[select,quantity,pack]=row.querySelectorAll('select,input');
+    if(event.target===select&&select.value)pack.value=deliveryPack(select.value);
+    deliveryRows[index]={...deliveryRows[index],name:select.value,packages:Number(quantity.value),unitsPerPackage:Number(pack.value)};
+    row.querySelector('[data-delivery-total]').textContent=select.value&&Number(quantity.value)>0&&Number(pack.value)>0?`Entrada: ${Number(quantity.value)*Number(pack.value)} ${stockUnit($('#deliverySupplier').value,select.value)}`:'Completa producto y cantidades';
+  });
+  $('#deliveryReview').addEventListener('input',event=>{
+    if(event.target.matches('input'))event.target.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+  $('#deliveryReview').addEventListener('click',event=>{
+    const remove=event.target.closest('[data-remove-delivery]');if(!remove)return;
+    deliveryRows.splice(Number(remove.dataset.removeDelivery),1);renderDeliveryRows();
+  });
+  $('#addDeliveryLine').addEventListener('click',()=>{deliveryRows.push({name:'',packages:1,unitsPerPackage:1,source:'Línea añadida manualmente'});renderDeliveryRows();});
+  $('#applyDelivery').addEventListener('click',applyDeliveryDocument);
   $('#closeAuto').addEventListener('click',()=>$('#autoDialog').close());
   $('#autoDialog').addEventListener('click',event=>{if(event.target===$('#autoDialog'))$('#autoDialog').close();});
   $('#autoBody').addEventListener('click',event=>{if(event.target.closest('#calculateAuto'))handleAutoCalculation();});
