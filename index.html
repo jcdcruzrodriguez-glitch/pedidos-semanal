@@ -55,6 +55,9 @@
     .product-name{font-size:13.5px;line-height:1.25;font-weight:650;overflow-wrap:anywhere}
     .product.selected .product-name{color:var(--brand)}
     .product-note{font-size:10px;color:var(--faint);margin-top:3px}
+    .product-actions{display:flex;gap:6px;margin-top:7px}
+    .product-actions button{border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--muted);padding:4px 7px;font-size:10px;font-weight:800}
+    .product-actions .remove-product{color:var(--danger)}
     .controls{display:grid;grid-template-columns:38px 42px 38px;height:40px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--bg)}
     .qty-btn{border:0;background:transparent;font-size:21px;color:var(--muted);padding:0;touch-action:manipulation}
     .qty-btn:active{background:var(--line)}
@@ -63,6 +66,15 @@
     .selected .qty{color:var(--brand)}
     .custom-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 1px 18px}
     .ghost-btn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:12px;padding:11px 13px;font-size:12px;font-weight:800}
+    .retired-list{border:1px solid var(--line);border-radius:12px;margin:10px 1px 18px;overflow:hidden}
+    .retired-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+    .retired-item:last-child{border:0}
+    .retired-item button{border:1px solid var(--line);border-radius:7px;background:var(--panel2);color:var(--text);padding:6px 8px;font-size:10px;font-weight:800}
+    .edit-form{padding:14px 16px 18px;overflow-y:auto;min-height:0}
+    .edit-field{display:block;margin-bottom:12px;color:var(--muted);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+    .edit-field input,.edit-field select{display:block;width:100%;margin-top:6px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font-size:16px;outline:none}
+    .edit-field input:focus,.edit-field select:focus{border-color:var(--brand)}
+    .edit-form .action{width:100%}
     .empty{border:1px dashed var(--line);border-radius:16px;padding:40px 20px;text-align:center;color:var(--muted)}
     .empty strong{display:block;color:var(--text);margin-bottom:5px}
     .order-bar{position:fixed;z-index:30;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:736px;margin:auto;border:1px solid #2d5c40;border-radius:16px;background:rgba(15,35,23,.96);box-shadow:var(--shadow);padding:10px 11px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(16px)}
@@ -158,6 +170,19 @@
       <div class="summary-actions" id="autoActions" hidden><button class="action" id="backAuto" type="button">VOLVER</button><button class="action primary" id="applyAuto" type="button">AÑADIR AL PEDIDO</button></div>
     </div>
   </dialog>
+  <dialog id="productDialog">
+    <div class="summary">
+      <div class="handle"></div>
+      <div class="summary-head"><h2 id="productDialogTitle">Añadir producto</h2><button class="close" id="closeProduct" type="button" aria-label="Cerrar">×</button></div>
+      <form id="productForm" class="edit-form">
+        <label class="edit-field">Nombre del producto<input id="editName" maxlength="100" required autocomplete="off"></label>
+        <label class="edit-field">Proveedor<select id="editSupplier" required></select></label>
+        <label class="edit-field">Categoría<input id="editCategory" maxlength="60" placeholder="Otros"></label>
+        <p class="calc-note">Los cambios hechos aquí se guardan en este navegador. No modifican la app de Inventario.</p>
+        <button class="action primary" type="submit">GUARDAR PRODUCTO</button>
+      </form>
+    </div>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -212,6 +237,10 @@
   let onlySelected = false;
   let state = loadState();
   state.catalogSync ||= {retired:[],manual:[]};
+  state.catalogOverrides ||= {};
+  let editingOriginId = null;
+  let editingDisplayedProduct = null;
+  let showRetiredProducts = false;
 
   const $ = selector => document.querySelector(selector);
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -424,15 +453,21 @@
   }
   function allProducts(supplier){
     const base=[],seen=new Set();
-    const add=product=>{
+    const add=(product,originId)=>{
+      if(state.catalogOverrides[originId])return;
       if(isRetired(supplier,product.name))return;
       const id=normalize(product.name);
       if(seen.has(id))return;
-      seen.add(id);base.push(product);
+      seen.add(id);base.push({...product,originId});
     };
-    Object.entries(CATALOG[supplier].categories).forEach(([category,products])=>products.forEach(p=>add({...p,category,custom:false})));
-    (state.catalogSync.manual||[]).filter(p=>p.supplier===supplier).forEach(p=>add({name:p.name,uses:0,category:p.category||'Añadidos en inventario',custom:false,imported:true}));
-    (state.custom[supplier]||[]).forEach(name=>add({name,uses:0,category:'Añadidos manualmente',custom:true}));
+    Object.entries(CATALOG[supplier].categories).forEach(([category,products])=>products.forEach(p=>add({...p,category,custom:false},productId(supplier,p.name))));
+    (state.catalogSync.manual||[]).filter(p=>p.supplier===supplier).forEach(p=>add({name:p.name,uses:0,category:p.category||'Añadidos en inventario',custom:false,imported:true},productId(supplier,p.name)));
+    (state.custom[supplier]||[]).forEach(name=>add({name,uses:0,category:'Añadidos manualmente',custom:true},productId(supplier,name)));
+    Object.entries(state.catalogOverrides).forEach(([originId,p])=>{
+      if(p.removed||p.supplier!==supplier||seen.has(normalize(p.name)))return;
+      seen.add(normalize(p.name));
+      base.push({name:p.name,uses:0,category:p.category||'Añadidos manualmente',custom:false,edited:true,originId});
+    });
     return base;
   }
   function isRetired(supplier,name){
@@ -464,6 +499,62 @@
     }catch(e){alert(e.message||'No se pudo leer el catálogo');}
     finally{$('#catalogFile').value='';}
   }
+  function openProductDialog(row=null){
+    editingOriginId=row?.dataset.origin||null;
+    editingDisplayedProduct=row?{supplier:row.dataset.supplier,name:row.dataset.name,category:row.dataset.category}:null;
+    $('#productDialogTitle').textContent=row?'Editar producto':'Añadir producto';
+    $('#editName').value=row?.dataset.name||'';
+    $('#editCategory').value=row?.dataset.category||'';
+    $('#editSupplier').innerHTML=suppliers.map(s=>`<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join('');
+    $('#editSupplier').value=row?.dataset.supplier||currentSupplier;
+    $('#productDialog').showModal();
+    $('#editName').focus();
+  }
+  function saveProductEdit(event){
+    event.preventDefault();
+    const name=$('#editName').value.trim().toLocaleUpperCase('es-ES');
+    const supplier=$('#editSupplier').value;
+    const category=$('#editCategory').value.trim()||'Añadidos manualmente';
+    if(!name||!CATALOG[supplier])return;
+    if(allProducts(supplier).some(p=>normalize(p.name)===normalize(name)&&p.originId!==editingOriginId)){
+      showToast('Ya existe en ese proveedor');return;
+    }
+    const newId=productId(supplier,name);
+    if(editingDisplayedProduct){
+      const oldId=productId(editingDisplayedProduct.supplier,editingDisplayedProduct.name);
+      const oldQty=Number(state.quantities[oldId]||0);
+      const targetQty=Number(state.quantities[newId]||0);
+      if(oldId!==newId&&oldQty){
+        if(targetQty+oldQty>999){showToast('La suma supera 999 unidades');return;}
+        if(targetQty&&!confirm(`Ya hay ${targetQty} unidades guardadas con ese nombre en ${supplier}. ¿Sumar las ${oldQty} unidades de este producto?`))return;
+        state.quantities[newId]=targetQty+oldQty;
+        delete state.quantities[oldId];
+      }
+    }else if(state.quantities[newId]&&!confirm(`Hay una cantidad guardada para “${name}” en ${supplier}. ¿Recuperarla para este producto?`))return;
+    const originId=editingOriginId||`local:${Date.now()}:${Math.random().toString(36).slice(2,8)}`;
+    state.catalogOverrides[originId]={name,supplier,category,removed:false};
+    saveState();
+    $('#productDialog').close();
+    currentSupplier=supplier;searchAll=false;onlySelected=false;showRetiredProducts=false;
+    $('#search').value='';$('#scopeBtn').classList.remove('active');$('#scopeBtn').setAttribute('aria-pressed','false');
+    render();
+    showToast(editingOriginId?'Producto actualizado':'Producto añadido');
+    editingOriginId=null;editingDisplayedProduct=null;
+  }
+  function removeProduct(row){
+    const {origin,supplier,name,category}=row.dataset;
+    const quantity=qty(supplier,name);
+    if(!confirm(`¿Quitar “${name}” de ${supplier}?${quantity?` Sus ${quantity} unidades quedarán guardadas por si lo restauras.`:''}`))return;
+    state.catalogOverrides[origin]={name,supplier,category,removed:true};
+    saveState();render();showToast('Producto retirado');
+  }
+  function restoreProduct(originId){
+    const product=state.catalogOverrides[originId];
+    if(!product)return;
+    if(allProducts(product.supplier).some(p=>normalize(p.name)===normalize(product.name))){showToast('Ya existe en ese proveedor');return;}
+    product.removed=false;
+    saveState();render();showToast('Producto restaurado');
+  }
   function stats(){
     let lines=0,units=0;
     suppliers.forEach(s=>allProducts(s).forEach(p=>{const q=qty(s,p.name);if(q){lines++;units+=q;}}));
@@ -494,8 +585,8 @@
   }
   function renderProduct(supplier,product){
     const q=qty(supplier,product.name), id=productId(supplier,product.name);
-    return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}" data-custom="${product.custom?'true':'false'}">
-      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.custom?'Añadido manualmente':product.imported?'Añadido en Inventario':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}${product.custom?' · toca para eliminar':''}</div></div>
+    return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}" data-category="${escapeHTML(product.category)}" data-origin="${escapeHTML(product.originId)}">
+      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.edited?'Editado en Pedidos':product.custom?'Añadido manualmente':product.imported?'Añadido en Inventario':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}</div><div class="product-actions"><button class="edit-product" type="button" aria-label="Editar ${escapeHTML(product.name)}">EDITAR</button><button class="remove-product" type="button" aria-label="Retirar ${escapeHTML(product.name)}">QUITAR</button></div></div>
       <div class="controls"><button class="qty-btn minus" type="button" aria-label="Quitar ${escapeHTML(product.name)}">−</button><input class="qty" id="q-${id}" inputmode="numeric" type="number" min="0" max="999" value="${q||''}" placeholder="0" aria-label="Cantidad de ${escapeHTML(product.name)}"><button class="qty-btn plus" type="button" aria-label="Añadir ${escapeHTML(product.name)}">+</button></div>
     </div>`;
   }
@@ -523,7 +614,9 @@
       const supplierNote=CATALOG[currentSupplier].note;
       const emptyTitle=onlySelected?'No hay productos seleccionados':(!query && !total?'Sin detalle de productos':'No hay coincidencias');
       const emptyDetail=onlySelected?'Añade cantidades para verlas aquí.':(!query && !total && supplierNote?supplierNote:'Prueba con otra palabra.');
-      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name" style="color:${color}">${escapeHTML(currentSupplier)}</h2><div class="supplier-meta">${total} productos · ${selected} seleccionados</div></div><button class="only-selected ${onlySelected?'active':''}" id="onlySelected" type="button">Solo pedido</button></div>${content||emptyHTML(emptyTitle,emptyDetail)}<div class="custom-actions"><button class="ghost-btn" id="addCustom" type="button">＋ Añadir producto manual</button><button class="ghost-btn" id="importCatalog" type="button">↥ Actualizar desde Inventario</button></div>`;
+      const retired=Object.entries(state.catalogOverrides).filter(([,p])=>p.removed&&p.supplier===currentSupplier);
+      const retiredHTML=showRetiredProducts?`<div class="retired-list">${retired.map(([origin,p])=>`<div class="retired-item"><span>${escapeHTML(p.name)}</span><button type="button" data-restore="${escapeHTML(origin)}">RESTAURAR</button></div>`).join('')}</div>`:'';
+      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name" style="color:${color}">${escapeHTML(currentSupplier)}</h2><div class="supplier-meta">${total} productos · ${selected} seleccionados</div></div><button class="only-selected ${onlySelected?'active':''}" id="onlySelected" type="button">Solo pedido</button></div>${content||emptyHTML(emptyTitle,emptyDetail)}<div class="custom-actions"><button class="ghost-btn" id="addCustom" type="button">＋ Añadir producto</button><button class="ghost-btn" id="importCatalog" type="button">↥ Actualizar desde Inventario</button>${retired.length?`<button class="ghost-btn" id="showRetired" type="button">${showRetiredProducts?'Ocultar retirados':`Retirados (${retired.length})`}</button>`:''}</div>${retiredHTML}`;
     }
   }
   function emptyHTML(title,detail){ return `<div class="empty"><strong>${escapeHTML(title)}</strong>${escapeHTML(detail)}</div>`; }
@@ -629,13 +722,17 @@
     const retiredRecommendations=[];
     const suggestions=Object.entries(totals).map(([code,amount])=>{
       const item=AUTO_ITEMS[code],quantity=Math.ceil(amount/item[2]);
-      let supplier=item[0];
-      if(isRetired(supplier,item[1])){
-        const replacement=(state.catalogSync.manual||[]).find(p=>p.name===item[1]&&!isRetired(p.supplier,p.name));
-        if(!replacement){retiredRecommendations.push(item[1]);return null;}
-        supplier=replacement.supplier;
+      let supplier=item[0],name=item[1];
+      const edit=state.catalogOverrides[productId(supplier,name)];
+      if(edit&&!edit.removed){supplier=edit.supplier;name=edit.name;}
+      else if(edit?.removed||isRetired(supplier,name)){
+        const candidates=[...Object.values(state.catalogOverrides).filter(p=>!p.removed&&normalize(p.name)===normalize(name)),
+          ...(state.catalogSync.manual||[]).filter(p=>normalize(p.name)===normalize(name)&&!isRetired(p.supplier,p.name))];
+        const unique=[...new Map(candidates.map(p=>[`${p.supplier}|${p.name}`,p])).values()];
+        if(unique.length!==1){retiredRecommendations.push(name);return null;}
+        supplier=unique[0].supplier;name=unique[0].name;
       }
-      return {code,supplier,name:item[1],quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
+      return {code,supplier,name,quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
     }).filter(x=>x&&x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
     return {suggestions,retiredRecommendations,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
   }
@@ -669,18 +766,24 @@
 
   $('#supplierNav').addEventListener('click',event=>{
     const button=event.target.closest('[data-supplier]');if(!button)return;
-    currentSupplier=button.dataset.supplier;searchAll=false;onlySelected=false;$('#scopeBtn').classList.remove('active');$('#scopeBtn').setAttribute('aria-pressed','false');render();button.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});window.scrollTo({top:0,behavior:'smooth'});
+    currentSupplier=button.dataset.supplier;searchAll=false;onlySelected=false;showRetiredProducts=false;$('#scopeBtn').classList.remove('active');$('#scopeBtn').setAttribute('aria-pressed','false');render();button.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});window.scrollTo({top:0,behavior:'smooth'});
   });
   $('#catalog').addEventListener('click',event=>{
     const row=event.target.closest('.product');
     if(row && (event.target.closest('.minus')||event.target.closest('.plus'))){const delta=event.target.closest('.plus')?1:-1;setQty(row.dataset.supplier,row.dataset.name,qty(row.dataset.supplier,row.dataset.name)+delta);return;}
+    if(row && event.target.closest('.edit-product')){openProductDialog(row);return;}
+    if(row && event.target.closest('.remove-product')){removeProduct(row);return;}
+    const restore=event.target.closest('[data-restore]');if(restore){restoreProduct(restore.dataset.restore);return;}
     if(event.target.closest('#onlySelected')){onlySelected=!onlySelected;render();return;}
     if(event.target.closest('#importCatalog')){$('#catalogFile').click();return;}
-    if(event.target.closest('#addCustom')){const name=prompt(`Nuevo producto para ${currentSupplier}:`);if(!name||!name.trim())return;const clean=name.trim().toUpperCase();state.custom[currentSupplier]=state.custom[currentSupplier]||[];if(!state.custom[currentSupplier].some(x=>normalize(x)===normalize(clean)))state.custom[currentSupplier].push(clean);saveState();render();showToast('Producto añadido');return;}
-    if(row && row.dataset.custom==='true' && event.target.closest('.product-name')){if(confirm(`¿Eliminar “${row.dataset.name}”?`)){state.custom[row.dataset.supplier]=state.custom[row.dataset.supplier].filter(x=>x!==row.dataset.name);delete state.quantities[productId(row.dataset.supplier,row.dataset.name)];saveState();render();}}
+    if(event.target.closest('#showRetired')){showRetiredProducts=!showRetiredProducts;render();return;}
+    if(event.target.closest('#addCustom')){openProductDialog();return;}
   });
   $('#catalog').addEventListener('change',event=>{if(!event.target.matches('.qty'))return;const row=event.target.closest('.product');setQty(row.dataset.supplier,row.dataset.name,event.target.value);});
   $('#catalogFile').addEventListener('change',event=>importCatalog(event.target.files[0]));
+  $('#productForm').addEventListener('submit',saveProductEdit);
+  $('#closeProduct').addEventListener('click',()=>$('#productDialog').close());
+  $('#productDialog').addEventListener('click',event=>{if(event.target===$('#productDialog'))$('#productDialog').close();});
   $('#search').addEventListener('input',render);
   $('#clearSearch').addEventListener('click',()=>{$('#search').value='';$('#search').focus();render();});
   $('#scopeBtn').addEventListener('click',()=>{searchAll=!searchAll;$('#scopeBtn').classList.toggle('active',searchAll);$('#scopeBtn').setAttribute('aria-pressed',String(searchAll));render();});
