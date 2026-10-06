@@ -61,7 +61,7 @@
     .qty{width:42px;border:0;border-inline:1px solid var(--line);background:transparent;color:var(--text);font-size:16px;font-weight:850;text-align:center;outline:none;-moz-appearance:textfield;padding:0}
     .qty::-webkit-outer-spin-button,.qty::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
     .selected .qty{color:var(--brand)}
-    .custom-actions{display:flex;gap:8px;margin:8px 1px 18px}
+    .custom-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 1px 18px}
     .ghost-btn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:12px;padding:11px 13px;font-size:12px;font-weight:800}
     .empty{border:1px dashed var(--line);border-radius:16px;padding:40px 20px;text-align:center;color:var(--muted)}
     .empty strong{display:block;color:var(--text);margin-bottom:5px}
@@ -125,6 +125,7 @@
   </header>
   <nav class="supplier-nav" id="supplierNav" aria-label="Proveedores"></nav>
   <main id="catalog"></main>
+  <input id="catalogFile" type="file" accept=".json,application/json" hidden>
 
   <div class="order-bar" id="orderBar">
     <div class="order-info"><strong id="orderCount">Pedido vacío</strong><span id="orderDetail">Los cambios se guardan en este teléfono</span></div>
@@ -210,6 +211,7 @@
   let searchAll = false;
   let onlySelected = false;
   let state = loadState();
+  state.catalogSync ||= {retired:[],manual:[]};
 
   const $ = selector => document.querySelector(selector);
   const normalize = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
@@ -421,10 +423,46 @@
     saveState(); render();
   }
   function allProducts(supplier){
-    const base=[];
-    Object.entries(CATALOG[supplier].categories).forEach(([category,products])=>products.forEach(p=>base.push({...p,category,custom:false})));
-    (state.custom[supplier]||[]).forEach(name=>base.push({name,uses:0,category:'Añadidos manualmente',custom:true}));
+    const base=[],seen=new Set();
+    const add=product=>{
+      if(isRetired(supplier,product.name))return;
+      const id=normalize(product.name);
+      if(seen.has(id))return;
+      seen.add(id);base.push(product);
+    };
+    Object.entries(CATALOG[supplier].categories).forEach(([category,products])=>products.forEach(p=>add({...p,category,custom:false})));
+    (state.catalogSync.manual||[]).filter(p=>p.supplier===supplier).forEach(p=>add({name:p.name,uses:0,category:p.category||'Añadidos en inventario',custom:false,imported:true}));
+    (state.custom[supplier]||[]).forEach(name=>add({name,uses:0,category:'Añadidos manualmente',custom:true}));
     return base;
+  }
+  function isRetired(supplier,name){
+    return (state.catalogSync.retired||[]).some(p=>p.supplier===supplier&&p.name===name);
+  }
+  function canonicalSupplier(name){return suppliers.find(s=>normalize(s)===normalize(name));}
+  async function importCatalog(file){
+    if(!file)return;
+    try{
+      if(file.size>1000000)throw new Error('El archivo es demasiado grande');
+      const data=JSON.parse(await file.text());
+      if(data.source!=='irish-tavern-inventory'||data.version!==1||!Array.isArray(data.retired)||!Array.isArray(data.manual)||data.retired.length>1000||data.manual.length>1000)throw new Error('Archivo de catálogo no válido');
+      const clean=(entry,manual)=>{
+        if(!entry||typeof entry.name!=='string'||entry.name.length>150||typeof entry.supplier!=='string')throw new Error('Hay un producto sin nombre o proveedor');
+        const supplier=canonicalSupplier(entry.supplier);
+        if(!supplier)throw new Error(`Proveedor no reconocido: ${entry.supplier}`);
+        const product={supplier,name:entry.name.trim()};
+        if(!product.name)throw new Error('Hay un producto sin nombre');
+        if(manual){product.category=String(entry.category||'Añadidos en inventario').slice(0,80);product.unit=String(entry.unit||'unidades').slice(0,40);}
+        return product;
+      };
+      const retired=data.retired.map(p=>clean(p,false));
+      const manual=data.manual.map(p=>clean(p,true));
+      const affected=retired.filter(p=>qty(p.supplier,p.name)>0);
+      if(affected.length&&!confirm(`${affected.length} productos retirados tienen cantidades en un pedido guardado. Se conservarán, pero dejarán de aparecer en el pedido. ¿Continuar?`))return;
+      state.catalogSync={retired,manual};
+      saveState();render();
+      showToast(`Catálogo actualizado: ${manual.length} añadidos, ${retired.length} retirados`);
+    }catch(e){alert(e.message||'No se pudo leer el catálogo');}
+    finally{$('#catalogFile').value='';}
   }
   function stats(){
     let lines=0,units=0;
@@ -456,8 +494,8 @@
   }
   function renderProduct(supplier,product){
     const q=qty(supplier,product.name), id=productId(supplier,product.name);
-    return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}">
-      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.custom?'Añadido manualmente':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}${product.custom?' · toca para eliminar':''}</div></div>
+    return `<div class="product ${q?'selected':''}" data-supplier="${escapeHTML(supplier)}" data-name="${escapeHTML(product.name)}" data-custom="${product.custom?'true':'false'}">
+      <div><div class="product-name">${escapeHTML(product.name)}</div><div class="product-note">${product.custom?'Añadido manualmente':product.imported?'Añadido en Inventario':product.uses>1?`Aparece en ${product.uses} líneas de factura`:'Referencia de factura'}${product.custom?' · toca para eliminar':''}</div></div>
       <div class="controls"><button class="qty-btn minus" type="button" aria-label="Quitar ${escapeHTML(product.name)}">−</button><input class="qty" id="q-${id}" inputmode="numeric" type="number" min="0" max="999" value="${q||''}" placeholder="0" aria-label="Cantidad de ${escapeHTML(product.name)}"><button class="qty-btn plus" type="button" aria-label="Añadir ${escapeHTML(product.name)}">+</button></div>
     </div>`;
   }
@@ -485,7 +523,7 @@
       const supplierNote=CATALOG[currentSupplier].note;
       const emptyTitle=onlySelected?'No hay productos seleccionados':(!query && !total?'Sin detalle de productos':'No hay coincidencias');
       const emptyDetail=onlySelected?'Añade cantidades para verlas aquí.':(!query && !total && supplierNote?supplierNote:'Prueba con otra palabra.');
-      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name" style="color:${color}">${escapeHTML(currentSupplier)}</h2><div class="supplier-meta">${total} productos · ${selected} seleccionados</div></div><button class="only-selected ${onlySelected?'active':''}" id="onlySelected" type="button">Solo pedido</button></div>${content||emptyHTML(emptyTitle,emptyDetail)}<div class="custom-actions"><button class="ghost-btn" id="addCustom" type="button">＋ Añadir producto manual</button></div>`;
+      $('#catalog').innerHTML=`<div class="supplier-head"><div><h2 class="supplier-name" style="color:${color}">${escapeHTML(currentSupplier)}</h2><div class="supplier-meta">${total} productos · ${selected} seleccionados</div></div><button class="only-selected ${onlySelected?'active':''}" id="onlySelected" type="button">Solo pedido</button></div>${content||emptyHTML(emptyTitle,emptyDetail)}<div class="custom-actions"><button class="ghost-btn" id="addCustom" type="button">＋ Añadir producto manual</button><button class="ghost-btn" id="importCatalog" type="button">↥ Actualizar desde Inventario</button></div>`;
     }
   }
   function emptyHTML(title,detail){ return `<div class="empty"><strong>${escapeHTML(title)}</strong>${escapeHTML(detail)}</div>`; }
@@ -588,18 +626,26 @@
       const recipe=COCKTAILS[product];if(recipe){Object.entries(recipe).forEach(([code,ml])=>{if(code!=='$flavour')addRecipe(code,ml,count,'Cócteles');});coveredUnits+=count;return;}
       if(relevantCategories.some(key=>category.includes(key)))unmatched.set(productName,(unmatched.get(productName)||0)+count);
     });
+    const retiredRecommendations=[];
     const suggestions=Object.entries(totals).map(([code,amount])=>{
       const item=AUTO_ITEMS[code],quantity=Math.ceil(amount/item[2]);
-      return {code,supplier:item[0],name:item[1],quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
-    }).filter(x=>x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
-    return {suggestions,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
+      let supplier=item[0];
+      if(isRetired(supplier,item[1])){
+        const replacement=(state.catalogSync.manual||[]).find(p=>p.name===item[1]&&!isRetired(p.supplier,p.name));
+        if(!replacement){retiredRecommendations.push(item[1]);return null;}
+        supplier=replacement.supplier;
+      }
+      return {code,supplier,name:item[1],quantity,amount,detail:formatConsumed(item,amount),format:item[4],reasons:[...reasons[code]]};
+    }).filter(x=>x&&x.quantity>0).sort((a,b)=>a.supplier.localeCompare(b.supplier,'es')||a.name.localeCompare(b.name,'es'));
+    return {suggestions,retiredRecommendations,unmatched:[...unmatched.entries()].sort((a,b)=>b[1]-a[1]),ignored:[...ignored.entries()].sort((a,b)=>b[1]-a[1]),salesUnits,coveredUnits};
   }
   function renderAutoResults(result){
     latestSuggestion=result.suggestions;
     const groups=new Map();result.suggestions.forEach(item=>{if(!groups.has(item.supplier))groups.set(item.supplier,[]);groups.get(item.supplier).push(item);});
     const warnings=result.unmatched.length?`<div class="warning-box"><strong>Quedan productos por relacionar</strong><br>${result.unmatched.slice(0,12).map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}${result.unmatched.length>12?` · y ${result.unmatched.length-12} más`:''}</div>`:'';
+    const retiredNote=result.retiredRecommendations.length?`<div class="warning-box"><strong>Productos retirados no incluidos en el pedido</strong><br>${result.retiredRecommendations.map(escapeHTML).join(' · ')}</div>`:'';
     const ignoredNote=result.ignored.length?`<div class="calc-note">Ventas genéricas no descontadas: ${result.ignored.map(([name,count])=>`${escapeHTML(name)} (${count})`).join(' · ')}. El TPV no indica qué botella se utilizó.</div>`:'';
-    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}${ignoredNote}`;
+    $('#autoBody').innerHTML=`<div class="auto-status"><strong>${result.suggestions.length} productos sugeridos.</strong><br>Se han leído ${Math.round(result.salesUnits)} ventas. La propuesta repone consumo; aún no descuenta existencias.</div>${[...groups].map(([supplier,items])=>`<section class="auto-group"><h3>${escapeHTML(supplier)}</h3>${items.map(item=>`<div class="auto-line"><div><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(item.detail)} · pedir por ${escapeHTML(item.format)}</small></div><div class="auto-qty">${item.quantity}</div></div>`).join('')}</section>`).join('')}${retiredNote}${warnings||'<div class="calc-note">Todos los productos de compra relevantes encontrados están relacionados.</div>'}${ignoredNote}`;
     $('#autoActions').hidden=false;
   }
   async function handleAutoCalculation(){
@@ -629,10 +675,12 @@
     const row=event.target.closest('.product');
     if(row && (event.target.closest('.minus')||event.target.closest('.plus'))){const delta=event.target.closest('.plus')?1:-1;setQty(row.dataset.supplier,row.dataset.name,qty(row.dataset.supplier,row.dataset.name)+delta);return;}
     if(event.target.closest('#onlySelected')){onlySelected=!onlySelected;render();return;}
+    if(event.target.closest('#importCatalog')){$('#catalogFile').click();return;}
     if(event.target.closest('#addCustom')){const name=prompt(`Nuevo producto para ${currentSupplier}:`);if(!name||!name.trim())return;const clean=name.trim().toUpperCase();state.custom[currentSupplier]=state.custom[currentSupplier]||[];if(!state.custom[currentSupplier].some(x=>normalize(x)===normalize(clean)))state.custom[currentSupplier].push(clean);saveState();render();showToast('Producto añadido');return;}
-    if(row && row.querySelector('.product-note').textContent.startsWith('Añadido') && event.target.closest('.product-name')){if(confirm(`¿Eliminar “${row.dataset.name}”?`)){state.custom[row.dataset.supplier]=state.custom[row.dataset.supplier].filter(x=>x!==row.dataset.name);delete state.quantities[productId(row.dataset.supplier,row.dataset.name)];saveState();render();}}
+    if(row && row.dataset.custom==='true' && event.target.closest('.product-name')){if(confirm(`¿Eliminar “${row.dataset.name}”?`)){state.custom[row.dataset.supplier]=state.custom[row.dataset.supplier].filter(x=>x!==row.dataset.name);delete state.quantities[productId(row.dataset.supplier,row.dataset.name)];saveState();render();}}
   });
   $('#catalog').addEventListener('change',event=>{if(!event.target.matches('.qty'))return;const row=event.target.closest('.product');setQty(row.dataset.supplier,row.dataset.name,event.target.value);});
+  $('#catalogFile').addEventListener('change',event=>importCatalog(event.target.files[0]));
   $('#search').addEventListener('input',render);
   $('#clearSearch').addEventListener('click',()=>{$('#search').value='';$('#search').focus();render();});
   $('#scopeBtn').addEventListener('click',()=>{searchAll=!searchAll;$('#scopeBtn').classList.toggle('active',searchAll);$('#scopeBtn').setAttribute('aria-pressed',String(searchAll));render();});
